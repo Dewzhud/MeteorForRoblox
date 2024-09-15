@@ -1,16 +1,16 @@
 -- UILib.lua
 local UILib = {}
 
--- ฟังก์ชันสำหรับสร้างหน้าต่าง UI ที่เหมาะสำหรับมือถือ
-function UILib:CreateMobileFriendlyWindow()
+-- ฟังก์ชันสำหรับสร้างหน้าต่าง UI ปกติ
+function UILib:CreateNormalWindow()
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "UILibrary"
     ScreenGui.ResetOnSpawn = false
     ScreenGui.Parent = game:GetService("StarterGui")
 
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0.8, 0, 0.8, 0)  -- ปรับขนาดให้เหมาะกับมือถือ
-    MainFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
+    MainFrame.Size = UDim2.new(0.5, 0, 0.6, 0)  -- ขนาดของหน้าต่าง UI
+    MainFrame.Position = UDim2.new(0.25, 0, 0.2, 0)  -- ตำแหน่งของหน้าต่าง UI
     MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     MainFrame.Parent = ScreenGui
 
@@ -53,7 +53,7 @@ end
 -- ฟังก์ชันสำหรับสร้างปุ่มที่สวยงาม
 function UILib:AddBeautifulButton(text, callback)
     local Button = Instance.new("TextButton")
-    Button.Size = UDim2.new(1, 0, 0, 50)  -- ปรับขนาดปุ่ม
+    Button.Size = UDim2.new(1, 0, 0, 50)  -- ขนาดปุ่ม
     Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     Button.Text = text
     Button.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -68,7 +68,7 @@ end
 -- ฟังก์ชันสำหรับสร้าง Toggle
 function UILib:AddToggle(text, callback)
     local Toggle = Instance.new("TextButton")
-    Toggle.Size = UDim2.new(1, 0, 0, 50)  -- ปรับขนาด Toggle
+    Toggle.Size = UDim2.new(1, 0, 0, 50)  -- ขนาด Toggle
     Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     Toggle.Text = text .. " (OFF)"
     Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -87,7 +87,7 @@ end
 -- ฟังก์ชันสำหรับสร้าง Slider
 function UILib:AddSlider(text, minValue, maxValue, callback)
     local SliderFrame = Instance.new("Frame")
-    SliderFrame.Size = UDim2.new(1, 0, 0, 80) -- ปรับขนาด Slider
+    SliderFrame.Size = UDim2.new(1, 0, 0, 80) -- ขนาด Slider
     SliderFrame.BackgroundTransparency = 1
     SliderFrame.Parent = self.CurrentCategory
 
@@ -148,7 +148,7 @@ end
 -- ฟังก์ชันสำหรับสร้าง Label
 function UILib:AddLabel(text)
     local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(1, 0, 0, 50) -- ปรับขนาด Label
+    Label.Size = UDim2.new(1, 0, 0, 50) -- ขนาด Label
     Label.Text = text
     Label.TextColor3 = Color3.fromRGB(255, 255, 255)
     Label.BackgroundTransparency = 1
