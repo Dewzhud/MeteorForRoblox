@@ -1,53 +1,61 @@
 -- เริ่มต้น UILib
 local UILib = {}
 
--- ฟังก์ชันเพื่อสร้างหน้าต่างหลัก
+-- ฟังก์ชันสร้างหน้าต่างหลัก
 function UILib:CreateWindow()
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "UILibrary"
     ScreenGui.ResetOnSpawn = false
-    ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui") -- ใช้ PlayerGui เพื่อแสดง GUI
+    ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 500, 0, 400)
-    MainFrame.Position = UDim2.new(0.5, -250, 0.5, -200)
+    MainFrame.Size = UDim2.new(0, 300, 0, 400)
+    MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
     MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     MainFrame.Parent = ScreenGui
+
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Parent = MainFrame
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
     self.MainFrame = MainFrame
     return MainFrame
 end
 
--- ฟังก์ชันเพิ่มหมวดหมู่
-function UILib:AddCategory(categoryName)
+-- ฟังก์ชันเพิ่มหมวดหมู่แบบ Dropdown
+function UILib:AddDropdownCategory(categoryName)
     local CategoryFrame = Instance.new("Frame")
-    CategoryFrame.Size = UDim2.new(0, 150, 0, 400)
+    CategoryFrame.Size = UDim2.new(1, 0, 0, 30)
     CategoryFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     CategoryFrame.BorderSizePixel = 0
     CategoryFrame.Parent = self.MainFrame
 
-    local CategoryLabel = Instance.new("TextButton")
-    CategoryLabel.Text = categoryName .. " (Click to Toggle)"
-    CategoryLabel.Size = UDim2.new(1, 0, 0, 30)
-    CategoryLabel.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    CategoryLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    CategoryLabel.Parent = CategoryFrame
+    local CategoryButton = Instance.new("TextButton")
+    CategoryButton.Text = categoryName .. " ▼"
+    CategoryButton.Size = UDim2.new(1, 0, 1, 0)
+    CategoryButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    CategoryButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CategoryButton.Parent = CategoryFrame
 
     local ContentFrame = Instance.new("Frame")
-    ContentFrame.Size = UDim2.new(1, 0, 1, -30)
-    ContentFrame.Position = UDim2.new(0, 0, 0, 30)
+    ContentFrame.Size = UDim2.new(1, 0, 0, 0)
     ContentFrame.BackgroundTransparency = 1
+    ContentFrame.ClipsDescendants = true
     ContentFrame.Parent = CategoryFrame
 
-    local isHidden = false
-    CategoryLabel.MouseButton1Click:Connect(function()
-        isHidden = not isHidden
-        if isHidden then
-            ContentFrame.Visible = false
-            CategoryLabel.Text = categoryName .. " (Hidden)"
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Parent = ContentFrame
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+    local isExpanded = false
+    CategoryButton.MouseButton1Click:Connect(function()
+        isExpanded = not isExpanded
+        if isExpanded then
+            CategoryButton.Text = categoryName .. " ▲"
+            ContentFrame:TweenSize(UDim2.new(1, 0, 0, #ContentFrame:GetChildren() * 30), "Out", "Quad", 0.2, true)
         else
-            ContentFrame.Visible = true
-            CategoryLabel.Text = categoryName .. " (Click to Toggle)"
+            CategoryButton.Text = categoryName .. " ▼"
+            ContentFrame:TweenSize(UDim2.new(1, 0, 0, 0), "Out", "Quad", 0.2, true)
         end
     end)
 
@@ -55,7 +63,7 @@ function UILib:AddCategory(categoryName)
     return ContentFrame
 end
 
--- ฟังก์ชันเพิ่มปุ่ม
+-- ฟังก์ชันเพิ่มปุ่มในหมวดหมู่
 function UILib:AddButton(text, callback)
     local Button = Instance.new("TextButton")
     Button.Size = UDim2.new(1, 0, 0, 30)
@@ -79,7 +87,6 @@ function UILib:AddToggle(text, callback)
     Toggle.Parent = self.CurrentCategory
 
     local isToggled = false
-
     Toggle.MouseButton1Click:Connect(function()
         isToggled = not isToggled
         if isToggled then
@@ -93,58 +100,75 @@ function UILib:AddToggle(text, callback)
     end)
 end
 
--- ฟังก์ชันสำหรับสร้าง TextLabel
-function UILib:AddTextLabel(text, color, size, position)
-    local TextLabel = Instance.new("TextLabel")
-    TextLabel.Size = size or UDim2.new(0, 200, 0, 50)
-    TextLabel.Position = position or UDim2.new(0.5, -100, 0, 0)
-    TextLabel.BackgroundTransparency = 1
-    TextLabel.TextColor3 = color or Color3.fromRGB(255, 255, 255)
-    TextLabel.TextStrokeTransparency = 0.5
-    TextLabel.Text = text or ""
-    TextLabel.TextSize = 24
-    TextLabel.Parent = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("UILibrary")
-end
+-- ฟังก์ชันเพิ่ม Slider
+function UILib:AddSlider(text, minValue, maxValue, callback)
+    local SliderFrame = Instance.new("Frame")
+    SliderFrame.Size = UDim2.new(1, 0, 0, 60)
+    SliderFrame.BackgroundTransparency = 1
+    SliderFrame.Parent = self.CurrentCategory
 
--- MeteorOwner ฟังก์ชันตรวจสอบผู้เล่นที่ชื่อ sh1z3ns
-local MeteorOwner = {}
+    local SliderLabel = Instance.new("TextLabel")
+    SliderLabel.Size = UDim2.new(1, 0, 0, 30)
+    SliderLabel.Text = text .. ": " .. tostring(minValue)
+    SliderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SliderLabel.BackgroundTransparency = 1
+    SliderLabel.Parent = SliderFrame
 
-function MeteorOwner:CreateTextESP(player)
-    UILib:AddTextLabel("[METEOR OWNER]", Color3.fromRGB(128, 0, 128), UDim2.new(0, 200, 0, 50), UDim2.new(0.5, -100, 0.5, 0))
+    local SliderBar = Instance.new("Frame")
+    SliderBar.Size = UDim2.new(1, 0, 0, 10)
+    SliderBar.Position = UDim2.new(0, 0, 0, 40)
+    SliderBar.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    SliderBar.BorderSizePixel = 0
+    SliderBar.Parent = SliderFrame
 
-    local function updateLabel()
-        while true do
-            if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                UILib:AddTextLabel("[METEOR OWNER]", Color3.fromRGB(128, 0, 128), UDim2.new(0, 200, 0, 50), UDim2.new(0.5, -100, 0.5, 0))
-            end
-            wait(0.1)
-        end
+    local SliderButton = Instance.new("TextButton")
+    SliderButton.Size = UDim2.new(0, 10, 1, 0)
+    SliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    SliderButton.Text = ""
+    SliderButton.Parent = SliderBar
+
+    local isDragging = false
+    local function updateSlider(input)
+        local posX = math.clamp(input.Position.X - SliderBar.AbsolutePosition.X, 0, SliderBar.AbsoluteSize.X)
+        local value = math.floor(((posX / SliderBar.AbsoluteSize.X) * (maxValue - minValue)) + minValue)
+        SliderButton.Position = UDim2.new(posX / SliderBar.AbsoluteSize.X, -5, 0, 0)
+        SliderLabel.Text = text .. ": " .. tostring(value)
+        callback(value)
     end
 
-    spawn(updateLabel)
-end
-
-function MeteorOwner:CheckForMeteorOwner()
-    local playerName = "sh1z3ns"
-    local players = game:GetService("Players")
-
-    for _, player in ipairs(players:GetPlayers()) do
-        if player.Name == playerName then
-            self:CreateTextESP(player)
-            break
+    SliderButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = true
         end
-    end
+    end)
+
+    SliderButton.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = false
+        end
+    end)
+
+    SliderBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            updateSlider(input)
+        end
+    end)
+
+    SliderBar.InputChanged:Connect(function(input)
+        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            updateSlider(input)
+        end
+    end)
 end
 
--- เรียกใช้ MeteorOwner
-MeteorOwner:CheckForMeteorOwner()
+-- ฟังก์ชันเพิ่ม Label
+function UILib:AddLabel(text)
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(1, 0, 0, 30)
+    Label.Text = text
+    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Label.BackgroundTransparency = 1
+    Label.Parent = self.CurrentCategory
+end
 
--- ทดสอบสร้าง GUI ด้วย UILib
-local window = UILib:CreateWindow()
-local category = UILib:AddCategory("Settings")
-UILib:AddButton("Click Me", function()
-    print("Button clicked!")
-end)
-UILib:AddToggle("Enable Feature", function(isToggled)
-    print("Feature enabled:", isToggled)
-end)
+return UILib
