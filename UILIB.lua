@@ -1,11 +1,12 @@
+-- เริ่มต้น UILib
 local UILib = {}
 
--- สร้างหน้าต่างหลัก
+-- ฟังก์ชันเพื่อสร้างหน้าต่างหลัก
 function UILib:CreateWindow()
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "UILibrary"
-    ScreenGui.ResetOnSpawn = false -- ป้องกันไม่ให้รีเซ็ตเมื่อ Player ตาย
-    ScreenGui.Parent = game:GetService("StarterGui") -- ใช้ StarterGui เพื่อให้คงอยู่แม้ Player ตาย
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui") -- ใช้ PlayerGui เพื่อแสดง GUI
 
     local MainFrame = Instance.new("Frame")
     MainFrame.Size = UDim2.new(0, 500, 0, 400)
@@ -17,7 +18,7 @@ function UILib:CreateWindow()
     return MainFrame
 end
 
--- สร้างหมวดหมู่
+-- ฟังก์ชันเพิ่มหมวดหมู่
 function UILib:AddCategory(categoryName)
     local CategoryFrame = Instance.new("Frame")
     CategoryFrame.Size = UDim2.new(0, 150, 0, 400)
@@ -54,7 +55,7 @@ function UILib:AddCategory(categoryName)
     return ContentFrame
 end
 
--- ฟังก์ชันสำหรับสร้างปุ่ม
+-- ฟังก์ชันเพิ่มปุ่ม
 function UILib:AddButton(text, callback)
     local Button = Instance.new("TextButton")
     Button.Size = UDim2.new(1, 0, 0, 30)
@@ -68,7 +69,7 @@ function UILib:AddButton(text, callback)
     end)
 end
 
--- ฟังก์ชันสำหรับสร้าง Toggle
+-- ฟังก์ชันเพิ่ม Toggle
 function UILib:AddToggle(text, callback)
     local Toggle = Instance.new("TextButton")
     Toggle.Size = UDim2.new(1, 0, 0, 30)
@@ -92,75 +93,58 @@ function UILib:AddToggle(text, callback)
     end)
 end
 
--- ฟังก์ชันสำหรับสร้าง Slider
-function UILib:AddSlider(text, minValue, maxValue, callback)
-    local SliderFrame = Instance.new("Frame")
-    SliderFrame.Size = UDim2.new(1, 0, 0, 60)
-    SliderFrame.BackgroundTransparency = 1
-    SliderFrame.Parent = self.CurrentCategory
+-- ฟังก์ชันสำหรับสร้าง TextLabel
+function UILib:AddTextLabel(text, color, size, position)
+    local TextLabel = Instance.new("TextLabel")
+    TextLabel.Size = size or UDim2.new(0, 200, 0, 50)
+    TextLabel.Position = position or UDim2.new(0.5, -100, 0, 0)
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.TextColor3 = color or Color3.fromRGB(255, 255, 255)
+    TextLabel.TextStrokeTransparency = 0.5
+    TextLabel.Text = text or ""
+    TextLabel.TextSize = 24
+    TextLabel.Parent = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("UILibrary")
+end
 
-    local SliderLabel = Instance.new("TextLabel")
-    SliderLabel.Size = UDim2.new(1, 0, 0, 30)
-    SliderLabel.Text = text .. ": " .. tostring(minValue)
-    SliderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SliderLabel.BackgroundTransparency = 1
-    SliderLabel.Parent = SliderFrame
+-- MeteorOwner ฟังก์ชันตรวจสอบผู้เล่นที่ชื่อ sh1z3ns
+local MeteorOwner = {}
 
-    local SliderBar = Instance.new("Frame")
-    SliderBar.Size = UDim2.new(1, 0, 0, 10)
-    SliderBar.Position = UDim2.new(0, 0, 0, 40)
-    SliderBar.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    SliderBar.BorderSizePixel = 0
-    SliderBar.Parent = SliderFrame
+function MeteorOwner:CreateTextESP(player)
+    UILib:AddTextLabel("[METEOR OWNER]", Color3.fromRGB(128, 0, 128), UDim2.new(0, 200, 0, 50), UDim2.new(0.5, -100, 0.5, 0))
 
-    local SliderButton = Instance.new("TextButton")
-    SliderButton.Size = UDim2.new(0, 10, 1, 0)
-    SliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    SliderButton.Text = ""
-    SliderButton.Parent = SliderBar
-
-    local isDragging = false
-    local function updateSlider(input)
-        local posX = math.clamp(input.Position.X - SliderBar.AbsolutePosition.X, 0, SliderBar.AbsoluteSize.X)
-        local value = math.floor(((posX / SliderBar.AbsoluteSize.X) * (maxValue - minValue)) + minValue)
-        SliderButton.Position = UDim2.new(posX / SliderBar.AbsoluteSize.X, -5, 0, 0)
-        SliderLabel.Text = text .. ": " .. tostring(value)
-        callback(value)
+    local function updateLabel()
+        while true do
+            if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                UILib:AddTextLabel("[METEOR OWNER]", Color3.fromRGB(128, 0, 128), UDim2.new(0, 200, 0, 50), UDim2.new(0.5, -100, 0.5, 0))
+            end
+            wait(0.1)
+        end
     end
 
-    SliderButton.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isDragging = true
-        end
-    end)
-
-    SliderButton.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isDragging = false
-        end
-    end)
-
-    SliderBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            updateSlider(input)
-        end
-    end)
-
-    SliderBar.InputChanged:Connect(function(input)
-        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            updateSlider(input)
-        end
-    end)
+    spawn(updateLabel)
 end
 
--- ฟังก์ชันสำหรับสร้าง Label
-function UILib:AddLabel(text)
-    local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(1, 0, 0, 30)
-    Label.Text = text
-    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Label.BackgroundTransparency = 1
-    Label.Parent = self.CurrentCategory
+function MeteorOwner:CheckForMeteorOwner()
+    local playerName = "sh1z3ns"
+    local players = game:GetService("Players")
+
+    for _, player in ipairs(players:GetPlayers()) do
+        if player.Name == playerName then
+            self:CreateTextESP(player)
+            break
+        end
+    end
 end
 
-return UILib
+-- เรียกใช้ MeteorOwner
+MeteorOwner:CheckForMeteorOwner()
+
+-- ทดสอบสร้าง GUI ด้วย UILib
+local window = UILib:CreateWindow()
+local category = UILib:AddCategory("Settings")
+UILib:AddButton("Click Me", function()
+    print("Button clicked!")
+end)
+UILib:AddToggle("Enable Feature", function(isToggled)
+    print("Feature enabled:", isToggled)
+end)
