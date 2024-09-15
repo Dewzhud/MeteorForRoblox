@@ -1,59 +1,27 @@
 -- UILib.lua
-
 local UILib = {}
 
--- ฟังก์ชันสำหรับสร้างหน้าต่างหลักที่เหมาะสำหรับมือถือ
+-- ฟังก์ชันสำหรับสร้างหน้าต่าง UI ที่เหมาะสำหรับมือถือ
 function UILib:CreateMobileFriendlyWindow()
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "MobileUILibrary"
+    ScreenGui.Name = "UILibrary"
     ScreenGui.ResetOnSpawn = false
     ScreenGui.Parent = game:GetService("StarterGui")
 
-    -- สร้างหน้าต่างหลักที่ปรับขนาดตามหน้าจอ
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0.8, 0, 0.7, 0) -- ใช้ Scale เพื่อให้รองรับขนาดหน้าจอมือถือ
-    MainFrame.Position = UDim2.new(0.1, 0, 0.15, 0) -- กลางหน้าจอ
-    MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    MainFrame.BackgroundTransparency = 0.1
-    MainFrame.BorderSizePixel = 0
+    MainFrame.Size = UDim2.new(0.8, 0, 0.8, 0)  -- ปรับขนาดให้เหมาะกับมือถือ
+    MainFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     MainFrame.Parent = ScreenGui
 
     self.MainFrame = MainFrame
     return MainFrame
 end
 
--- ฟังก์ชันสำหรับเพิ่มปุ่มที่ดูดี
-function UILib:AddBeautifulButton(text, callback)
-    local Button = Instance.new("TextButton")
-    Button.Size = UDim2.new(1, 0, 0, 50)
-    Button.BackgroundColor3 = Color3.fromRGB(40, 90, 160)
-    Button.BackgroundTransparency = 0.2
-    Button.Text = text
-    Button.Font = Enum.Font.SourceSansBold
-    Button.TextSize = 24
-    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Button.AutoButtonColor = false
-    Button.BorderSizePixel = 0
-    Button.Parent = self.CurrentCategory
-
-    -- เพิ่มการคลิกและสไตล์เปลี่ยนเมื่อ Hover
-    Button.MouseButton1Click:Connect(function()
-        callback()
-    end)
-    
-    -- ปรับแต่งการ Hover
-    Button.MouseEnter:Connect(function()
-        Button.BackgroundColor3 = Color3.fromRGB(60, 110, 200)
-    end)
-    Button.MouseLeave:Connect(function()
-        Button.BackgroundColor3 = Color3.fromRGB(40, 90, 160)
-    end)
-end
-
--- ฟังก์ชันสำหรับเพิ่ม Dropdown Category
+-- ฟังก์ชันสำหรับเพิ่มหมวดหมู่ Dropdown
 function UILib:AddDropdownCategory(categoryName)
     local CategoryFrame = Instance.new("Frame")
-    CategoryFrame.Size = UDim2.new(1, 0, 0, 60)
+    CategoryFrame.Size = UDim2.new(1, 0, 0, 50) -- ขนาดหมวดหมู่
     CategoryFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     CategoryFrame.BorderSizePixel = 0
     CategoryFrame.Parent = self.MainFrame
@@ -74,51 +42,52 @@ function UILib:AddDropdownCategory(categoryName)
     local isHidden = false
     CategoryLabel.MouseButton1Click:Connect(function()
         isHidden = not isHidden
-        if isHidden then
-            ContentFrame.Visible = false
-            CategoryLabel.Text = categoryName .. " (Hidden)"
-        else
-            ContentFrame.Visible = true
-            CategoryLabel.Text = categoryName .. " (Click to Toggle)"
-        end
+        ContentFrame.Visible = not isHidden
+        CategoryLabel.Text = isHidden and categoryName .. " (Hidden)" or categoryName .. " (Click to Toggle)"
     end)
 
     self.CurrentCategory = ContentFrame
     return ContentFrame
 end
 
--- ฟังก์ชันสำหรับเพิ่ม Toggle
+-- ฟังก์ชันสำหรับสร้างปุ่มที่สวยงาม
+function UILib:AddBeautifulButton(text, callback)
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.new(1, 0, 0, 50)  -- ปรับขนาดปุ่ม
+    Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Button.Text = text
+    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Button.TextScaled = true
+    Button.Parent = self.CurrentCategory
+
+    Button.MouseButton1Click:Connect(function()
+        callback()
+    end)
+end
+
+-- ฟังก์ชันสำหรับสร้าง Toggle
 function UILib:AddToggle(text, callback)
     local Toggle = Instance.new("TextButton")
-    Toggle.Size = UDim2.new(1, 0, 0, 50)
-    Toggle.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+    Toggle.Size = UDim2.new(1, 0, 0, 50)  -- ปรับขนาด Toggle
+    Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     Toggle.Text = text .. " (OFF)"
     Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Toggle.Font = Enum.Font.SourceSansBold
-    Toggle.TextSize = 20
-    Toggle.AutoButtonColor = false
-    Toggle.BorderSizePixel = 0
+    Toggle.TextScaled = true
     Toggle.Parent = self.CurrentCategory
 
     local isToggled = false
-
     Toggle.MouseButton1Click:Connect(function()
         isToggled = not isToggled
-        if isToggled then
-            Toggle.Text = text .. " (ON)"
-            Toggle.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        else
-            Toggle.Text = text .. " (OFF)"
-            Toggle.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        end
+        Toggle.Text = text .. " (" .. (isToggled and "ON" or "OFF") .. ")"
+        Toggle.BackgroundColor3 = isToggled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
         callback(isToggled)
     end)
 end
 
--- ฟังก์ชันสำหรับเพิ่ม Slider
+-- ฟังก์ชันสำหรับสร้าง Slider
 function UILib:AddSlider(text, minValue, maxValue, callback)
     local SliderFrame = Instance.new("Frame")
-    SliderFrame.Size = UDim2.new(1, 0, 0, 60)
+    SliderFrame.Size = UDim2.new(1, 0, 0, 80) -- ปรับขนาด Slider
     SliderFrame.BackgroundTransparency = 1
     SliderFrame.Parent = self.CurrentCategory
 
@@ -137,7 +106,7 @@ function UILib:AddSlider(text, minValue, maxValue, callback)
     SliderBar.Parent = SliderFrame
 
     local SliderButton = Instance.new("TextButton")
-    SliderButton.Size = UDim2.new(0, 10, 1, 0)
+    SliderButton.Size = UDim2.new(0, 20, 1, 0)
     SliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     SliderButton.Text = ""
     SliderButton.Parent = SliderBar
@@ -146,7 +115,7 @@ function UILib:AddSlider(text, minValue, maxValue, callback)
     local function updateSlider(input)
         local posX = math.clamp(input.Position.X - SliderBar.AbsolutePosition.X, 0, SliderBar.AbsoluteSize.X)
         local value = math.floor(((posX / SliderBar.AbsoluteSize.X) * (maxValue - minValue)) + minValue)
-        SliderButton.Position = UDim2.new(posX / SliderBar.AbsoluteSize.X, -5, 0, 0)
+        SliderButton.Position = UDim2.new(posX / SliderBar.AbsoluteSize.X, -10, 0, 0)
         SliderLabel.Text = text .. ": " .. tostring(value)
         callback(value)
     end
@@ -176,15 +145,14 @@ function UILib:AddSlider(text, minValue, maxValue, callback)
     end)
 end
 
--- ฟังก์ชันสำหรับเพิ่ม Label
+-- ฟังก์ชันสำหรับสร้าง Label
 function UILib:AddLabel(text)
     local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(1, 0, 0, 30)
+    Label.Size = UDim2.new(1, 0, 0, 50) -- ปรับขนาด Label
     Label.Text = text
     Label.TextColor3 = Color3.fromRGB(255, 255, 255)
     Label.BackgroundTransparency = 1
-    Label.Font = Enum.Font.SourceSansBold
-    Label.TextSize = 20
+    Label.TextScaled = true
     Label.Parent = self.CurrentCategory
 end
 
