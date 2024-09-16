@@ -15,6 +15,14 @@ function UILib:CreateWindow()
     MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     MainFrame.Parent = ScreenGui
 
+    -- เพิ่มเอฟเฟ็กต์ Gradient
+    local Gradient = Instance.new("UIGradient")
+    Gradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 25, 112)), -- Dark Blue
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(135, 206, 250)) -- Light Blue
+    }
+    Gradient.Parent = MainFrame
+
     -- สร้าง Scroll Frame
     local ScrollFrame = Instance.new("ScrollingFrame")
     ScrollFrame.Size = UDim2.new(1, 0, 1, -50) -- ลดขนาด Scroll Frame เพื่อให้ปุ่มปิดเปิดอยู่ข้างล่าง
