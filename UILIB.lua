@@ -15,6 +15,14 @@ function UILib:CreateWindow()
     MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     MainFrame.Parent = ScreenGui
 
+    -- สร้าง Scroll Frame
+    local ScrollFrame = Instance.new("ScrollingFrame")
+    ScrollFrame.Size = UDim2.new(1, 0, 1, -50) -- ลดขนาด Scroll Frame เพื่อให้ปุ่มปิดเปิดอยู่ข้างล่าง
+    ScrollFrame.Position = UDim2.new(0, 0, 0, 0)
+    ScrollFrame.CanvasSize = UDim2.new(0, 0, 2, 0) -- ปรับขนาด Scroll Frame เพื่อรองรับเนื้อหาที่มากขึ้น
+    ScrollFrame.ScrollBarThickness = 6
+    ScrollFrame.Parent = MainFrame
+
     -- สร้างปุ่มปิด UI
     local CloseButton = Instance.new("TextButton")
     CloseButton.Size = UDim2.new(0, 100, 0, 50)
@@ -35,6 +43,7 @@ function UILib:CreateWindow()
     end)
 
     self.MainFrame = MainFrame
+    self.ScrollFrame = ScrollFrame
     return MainFrame
 end
 
@@ -43,7 +52,7 @@ function UILib:AddCategory(categoryName)
     local CategoryFrame = Instance.new("Frame")
     CategoryFrame.Size = UDim2.new(1, 0, 0, 50)
     CategoryFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    CategoryFrame.Parent = self.MainFrame
+    CategoryFrame.Parent = self.ScrollFrame
 
     local CategoryLabel = Instance.new("TextLabel")
     CategoryLabel.Size = UDim2.new(1, 0, 0, 30)
