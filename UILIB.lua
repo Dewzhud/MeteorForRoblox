@@ -61,50 +61,43 @@ MainFrameStroke.Parent = MainFrame
 local mainGradient = CreatePurpleGradient()
 mainGradient.Parent = MainFrame
 
--- สร้างปุ่มเปิด/ปิดที่มี Gradient และมุมโค้ง
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0, 100, 0, 30)
-ToggleButton.Position = UDim2.new(0.5, -50, 0, 10)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- สีดำ
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- ข้อความสีขาว
-ToggleButton.Text = "Open UI"
-ToggleButton.Parent = ScreenGui
+-- สร้างปุ่มปิด/เปิดที่มี Gradient
+local ToggleButtonFrame = Instance.new("Frame")
+ToggleButtonFrame.Size = UDim2.new(0, 150, 0, 50)
+ToggleButtonFrame.Position = UDim2.new(0.5, -75, 0, 10)
+ToggleButtonFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- สีพื้นหลังของ Frame
+ToggleButtonFrame.Parent = ScreenGui
 
--- เพิ่ม Gradient สีม่วงให้กับปุ่ม
+-- สร้างปุ่มปิด
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 75, 0, 50)
+CloseButton.Position = UDim2.new(0, 0, 0, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Text = "Close"
+CloseButton.Parent = ToggleButtonFrame
+
+-- สร้างปุ่มเปิด
+local OpenButton = Instance.new("TextButton")
+OpenButton.Size = UDim2.new(0, 75, 0, 50)
+OpenButton.Position = UDim2.new(0, 75, 0, 0)
+OpenButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+OpenButton.Text = "Open"
+OpenButton.Parent = ToggleButtonFrame
+
+-- เพิ่ม Gradient สีม่วงให้กับปุ่มปิดและเปิด
 local buttonGradient = CreatePurpleGradient()
-buttonGradient.Parent = ToggleButton
+buttonGradient.Parent = CloseButton
+buttonGradient.Parent = OpenButton
 
--- เพิ่ม Frame สำหรับมุมโค้งสีม่วง
-local CornerFrame = Instance.new("Frame")
-CornerFrame.Size = UDim2.new(1, 0, 1, 0)
-CornerFrame.BackgroundTransparency = 1
-CornerFrame.BorderSizePixel = 0
-CornerFrame.Parent = ToggleButton
+-- ฟังก์ชันเปิด/ปิดเฟรม
+CloseButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+end)
 
--- เพิ่ม UIStroke สีม่วงให้กับมุมโค้ง
-local CornerStroke = Instance.new("UIStroke")
-CornerStroke.Color = Color3.fromRGB(138, 43, 226)  -- สีม่วง
-CornerStroke.Thickness = 2
-CornerStroke.Parent = CornerFrame
-
-local ToggleButtonCorner = Instance.new("UICorner")
-ToggleButtonCorner.CornerRadius = UDim.new(0, 15)  -- ปรับความโค้งมนตามต้องการ
-ToggleButtonCorner.Parent = ToggleButton
-
--- ฟังก์ชันเปิด/ปิด UI
-local function ToggleMainFrame()
-    MainFrame.Visible = not MainFrame.Visible
-    -- เปลี่ยนข้อความและสีของปุ่มตามสถานะ
-    if MainFrame.Visible then
-        ToggleButton.Text = "Close UI"
-    else
-        ToggleButton.Text = "Open UI"
-    end
-end
-
--- ฟังก์ชันเมื่อกดปุ่ม
-ToggleButton.MouseButton1Click:Connect(function()
-    ToggleMainFrame()
+OpenButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = true
 end)
 
 -- สร้าง Scroll Frame
@@ -135,8 +128,8 @@ local function CreateToggle(optionText, onToggleOn, onToggleOff)
     local ToggleButton = Instance.new("TextButton")
     ToggleButton.Size = UDim2.new(0, 120, 0, 50)
     ToggleButton.Text = optionText
-    ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- ข้อความสีขาว
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)  -- สีพื้นหลังของปุ่ม
+    ToggleButton.TextColor3 = Color3.fromRGB(0, 0, 0)  -- ข้อความสีดำ
     ToggleButton.Parent = ScrollFrame
 
     -- เพิ่ม Corner และ Stroke ให้กับ ToggleButton
@@ -183,7 +176,7 @@ local function CreateToggle(optionText, onToggleOn, onToggleOff)
         else
             StatusBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- สีแดงเมื่อปิด
             if onToggleOff then
-            onToggleOff()  -- เรียกฟังก์ชันเมื่อปิด Toggle
+                onToggleOff()  -- เรียกฟังก์ชันเมื่อปิด Toggle
             end
         end
 
