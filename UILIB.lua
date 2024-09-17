@@ -25,6 +25,22 @@ end
 
 local ScreenGui, MainFrame = CreateScreenGui()
 
+-- สร้างปุ่ม Toggle เพื่อเปิด/ปิด UI
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0.2, 0, 0.05, 0)
+ToggleButton.Position = UDim2.new(0.4, 0, 0.05, 0)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Text = "Open UI"
+ToggleButton.Parent = ScreenGui
+
+local function ToggleUI()
+    MainFrame.Visible = not MainFrame.Visible
+    ToggleButton.Text = MainFrame.Visible and "Close UI" or "Open UI"
+end
+
+ToggleButton.MouseButton1Click:Connect(ToggleUI)
+
 -- สร้าง ScrollFrame สำหรับหมวดหมู่
 local CategoryScroll = Instance.new("ScrollingFrame")
 CategoryScroll.Size = UDim2.new(1, -20, 1, -20)
@@ -56,31 +72,35 @@ end
 
 -- ฟังก์ชันสำหรับสร้าง Toggle
 function UILib.CreateToggle(text, initialState, callback)
+    local ToggleFrame = Instance.new("Frame")
+    ToggleFrame.Size = UDim2.new(1, -10, 0, 50)
+    ToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    ToggleFrame.Parent = CategoryScroll
+    
+    local StatusBar = Instance.new("Frame")
+    StatusBar.Size = UDim2.new(0.2, 0, 1, 0)
+    StatusBar.Position = UDim2.new(0.8, 0, 0, 0)
+    StatusBar.BackgroundColor3 = initialState and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+    StatusBar.Parent = ToggleFrame
+    
     local Toggle = Instance.new("TextButton")
-    Toggle.Size = UDim2.new(1, -10, 0, 50)
+    Toggle.Size = UDim2.new(1, -30, 1, 0)
+    Toggle.Position = UDim2.new(0, 5, 0, 0)
     Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Toggle.Text = text
-    Toggle.Parent = CategoryScroll
-    
-    local ToggleState = Instance.new("BoolValue")
-    ToggleState.Value = initialState
+    Toggle.Text = text .. (initialState and " (On)" or " (Off)")
+    Toggle.Parent = ToggleFrame
 
-    local StatusBar = Instance.new("Frame")
-    StatusBar.Size = UDim2.new(0.1, 0, 1, 0)
-    StatusBar.Position = UDim2.new(0.9, 0, 0, 0)
-    StatusBar.BackgroundColor3 = ToggleState.Value and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
-    StatusBar.Parent = Toggle
-    
     local ToggleCorner = Instance.new("UICorner")
     ToggleCorner.CornerRadius = UDim.new(0, 8)
     ToggleCorner.Parent = Toggle
 
+    -- ฟังก์ชันที่เรียกเมื่อ Toggle ถูกกด
     Toggle.MouseButton1Click:Connect(function()
-        ToggleState.Value = not ToggleState.Value
-        StatusBar.BackgroundColor3 = ToggleState.Value and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
-        Toggle.Text = text .. (ToggleState.Value and " (On)" or " (Off)")
-        if callback then callback(ToggleState.Value) end
+        initialState = not initialState
+        StatusBar.BackgroundColor3 = initialState and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+        Toggle.Text = text .. (initialState and " (On)" or " (Off)")
+        if callback then callback(initialState) end
     end)
     
     return Toggle
