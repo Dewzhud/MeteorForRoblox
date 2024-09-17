@@ -1,20 +1,19 @@
+-- UILib.lua
 
+-- ฟังก์ชันสำหรับสร้าง UI
 local UILib = {}
 
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
--- ฟังก์ชันสำหรับสร้าง Main UI Frame
-local function CreateMainFrame()
+-- สร้าง ScreenGui และ Main Frame
+local function CreateScreenGui()
+    local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Parent = player:WaitForChild("PlayerGui")
-    ScreenGui.ResetOnSpawn = false
-
+    
     local MainFrame = Instance.new("Frame")
     MainFrame.Size = UDim2.new(0.5, 0, 0.6, 0)
     MainFrame.Position = UDim2.new(0.25, 0, 0.2, 0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    MainFrame.Visible = false
     MainFrame.Parent = ScreenGui
 
     local MainFrameCorner = Instance.new("UICorner")
@@ -24,69 +23,67 @@ local function CreateMainFrame()
     return ScreenGui, MainFrame
 end
 
--- ฟังก์ชันสำหรับสร้าง Toggle
-function UILib.CreateToggle(text, initialState, callback)
-    local ScreenGui, MainFrame = CreateMainFrame()
+local ScreenGui, MainFrame = CreateScreenGui()
 
-    local ToggleFrame = Instance.new("Frame")
-    ToggleFrame.Size = UDim2.new(1, -10, 0, 50)
-    ToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    ToggleFrame.Parent = MainFrame
+-- สร้าง ScrollFrame สำหรับหมวดหมู่
+local CategoryScroll = Instance.new("ScrollingFrame")
+CategoryScroll.Size = UDim2.new(1, -20, 1, -20)
+CategoryScroll.Position = UDim2.new(0, 10, 0, 10)
+CategoryScroll.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+CategoryScroll.ScrollBarThickness = 8
+CategoryScroll.Parent = MainFrame
 
-    local StatusBar = Instance.new("Frame")
-    StatusBar.Size = UDim2.new(0, 10, 1, 0)
-    StatusBar.Position = UDim2.new(0, 0, 0, 0)
-    StatusBar.BackgroundColor3 = initialState and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
-    StatusBar.Parent = ToggleFrame
+local CategoryLayout = Instance.new("UIListLayout")
+CategoryLayout.SortOrder = Enum.SortOrder.LayoutOrder
+CategoryLayout.Padding = UDim.new(0, 10)
+CategoryLayout.Parent = CategoryScroll
 
-    local Toggle = Instance.new("TextButton")
-    Toggle.Size = UDim2.new(1, -20, 1, 0)
-    Toggle.Position = UDim2.new(0, 15, 0, 0)
-    Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Toggle.Text = text .. (initialState and " (On)" or " (Off)")
-    Toggle.Parent = ToggleFrame
-
-    local ToggleState = Instance.new("BoolValue")
-    ToggleState.Value = initialState
-
-    local ToggleCorner = Instance.new("UICorner")
-    ToggleCorner.CornerRadius = UDim.new(0, 8)
-    ToggleCorner.Parent = Toggle
-
-    -- ฟังก์ชันที่เรียกเมื่อ Toggle ถูกกด
-    Toggle.MouseButton1Click:Connect(function()
-        ToggleState.Value = not ToggleState.Value
-        if ToggleState.Value then
-            Toggle.Text = text .. " (On)"
-            StatusBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-            if callback then callback(true) end
-        else
-            Toggle.Text = text .. " (Off)"
-            StatusBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-            if callback then callback(false) end
-        end
-    end)
-
-    return Toggle
-end
-
--- ฟังก์ชันสำหรับสร้าง Button
+-- ฟังก์ชันสำหรับสร้างปุ่ม
 function UILib.CreateButton(text)
-    local ScreenGui, MainFrame = CreateMainFrame()
-
     local Button = Instance.new("TextButton")
     Button.Size = UDim2.new(1, -10, 0, 50)
     Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     Button.TextColor3 = Color3.fromRGB(255, 255, 255)
     Button.Text = text
-    Button.Parent = MainFrame
-
+    Button.Parent = CategoryScroll
+    
     local ButtonCorner = Instance.new("UICorner")
     ButtonCorner.CornerRadius = UDim.new(0, 8)
     ButtonCorner.Parent = Button
-
+    
     return Button
+end
+
+-- ฟังก์ชันสำหรับสร้าง Toggle
+function UILib.CreateToggle(text, initialState, callback)
+    local Toggle = Instance.new("TextButton")
+    Toggle.Size = UDim2.new(1, -10, 0, 50)
+    Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Toggle.Text = text
+    Toggle.Parent = CategoryScroll
+    
+    local ToggleState = Instance.new("BoolValue")
+    ToggleState.Value = initialState
+
+    local StatusBar = Instance.new("Frame")
+    StatusBar.Size = UDim2.new(0.1, 0, 1, 0)
+    StatusBar.Position = UDim2.new(0.9, 0, 0, 0)
+    StatusBar.BackgroundColor3 = ToggleState.Value and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+    StatusBar.Parent = Toggle
+    
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(0, 8)
+    ToggleCorner.Parent = Toggle
+
+    Toggle.MouseButton1Click:Connect(function()
+        ToggleState.Value = not ToggleState.Value
+        StatusBar.BackgroundColor3 = ToggleState.Value and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+        Toggle.Text = text .. (ToggleState.Value and " (On)" or " (Off)")
+        if callback then callback(ToggleState.Value) end
+    end)
+    
+    return Toggle
 end
 
 -- ฟังก์ชันสำหรับสร้าง Slider
@@ -94,7 +91,7 @@ function UILib.CreateSlider(min, max, default, text, callback)
     local SliderFrame = Instance.new("Frame")
     SliderFrame.Size = UDim2.new(1, -10, 0, 70)
     SliderFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    SliderFrame.Parent = MainFrame
+    SliderFrame.Parent = CategoryScroll
     
     local SliderText = Instance.new("TextLabel")
     SliderText.Size = UDim2.new(1, -10, 0, 30)
@@ -132,7 +129,8 @@ function UILib.CreateLabel(text)
     Label.BackgroundTransparency = 1
     Label.TextColor3 = Color3.fromRGB(255, 255, 255)
     Label.Text = text
-    Label.Parent = MainFrame
+    Label.Parent = CategoryScroll
     return Label
 end
 
+return UILib
