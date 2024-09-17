@@ -109,11 +109,11 @@ UIPadding.Parent = ScrollFrame
 
 -- สร้าง InfoFrame
 local InfoFrame = Instance.new("Frame")
-InfoFrame.Size = UDim2.new(1, -20, 0, 100)
-InfoFrame.Position = UDim2.new(0, 10, 1, -110)
+InfoFrame.Size = UDim2.new(0, 200, 0, 100)
+InfoFrame.Position = UDim2.new(1, -210, 0, 10)
 InfoFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-InfoFrame.Visible = false
-InfoFrame.Parent = MainFrame
+InfoFrame.Visible = false  -- เริ่มต้นซ่อน InfoFrame
+InfoFrame.Parent = ScreenGui
 
 -- เพิ่ม Corner และ Stroke ให้กับ InfoFrame
 local InfoFrameCorner = Instance.new("UICorner")
@@ -125,32 +125,35 @@ InfoFrameStroke.Color = Color3.fromRGB(255, 255, 255)
 InfoFrameStroke.Thickness = 2
 InfoFrameStroke.Parent = InfoFrame
 
--- เพิ่ม Slider ให้กับ InfoFrame
-local Slider = Instance.new("Slider")
-Slider.Size = UDim2.new(1, -20, 0, 20)
-Slider.Position = UDim2.new(0, 10, 0, 60)
-Slider.Min = 0
-Slider.Max = 100
-Slider.Value = 50
-Slider.Parent = InfoFrame
+local infoGradient = CreatePurpleGradient()
+infoGradient.Parent = InfoFrame
 
--- เพิ่มปุ่มเปิด Toggle และคำอธิบาย
-local ToggleButtonInInfo = Instance.new("TextButton")
-ToggleButtonInInfo.Size = UDim2.new(1, -20, 0, 30)
-ToggleButtonInInfo.Position = UDim2.new(0, 10, 0, 30)
-ToggleButtonInInfo.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- สีพื้นหลังของปุ่ม
-ToggleButtonInInfo.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButtonInInfo.Text = "Toggle ON/OFF"
-ToggleButtonInInfo.Parent = InfoFrame
+-- เพิ่ม UIPadding ให้กับ InfoFrame
+local InfoFramePadding = Instance.new("UIPadding")
+InfoFramePadding.PaddingTop = UDim.new(0, 10)
+InfoFramePadding.PaddingBottom = UDim.new(0, 10)
+InfoFramePadding.PaddingLeft = UDim.new(0, 10)
+InfoFramePadding.PaddingRight = UDim.new(0, 10)
+InfoFramePadding.Parent = InfoFrame
 
+-- สร้างคำอธิบาย
 local DescriptionText = Instance.new("TextLabel")
-DescriptionText.Size = UDim2.new(1, -20, 0, 30)
-DescriptionText.Position = UDim2.new(0, 10, 0, 0)
+DescriptionText.Size = UDim2.new(1, 0, 0.6, 0)
+DescriptionText.Position = UDim2.new(0, 0, 0, 0)
 DescriptionText.BackgroundTransparency = 1
 DescriptionText.TextColor3 = Color3.fromRGB(255, 255, 255)
 DescriptionText.TextScaled = true
-DescriptionText.Text = "This toggle allows you to control specific features."
+DescriptionText.Text = "Toggle Description"
 DescriptionText.Parent = InfoFrame
+
+-- สร้างปุ่ม Toggle ใน InfoFrame
+local ToggleButtonInInfo = Instance.new("TextButton")
+ToggleButtonInInfo.Size = UDim2.new(1, 0, 0.4, 0)
+ToggleButtonInInfo.Position = UDim2.new(0, 0, 0.6, 0)
+ToggleButtonInInfo.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ToggleButtonInInfo.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButtonInInfo.Text = "Toggle OFF"
+ToggleButtonInInfo.Parent = InfoFrame
 
 -- ฟังก์ชันสร้างปุ่ม Toggle
 local function CreateToggle(optionText, onToggleOn, onToggleOff)
@@ -178,8 +181,6 @@ local function CreateToggle(optionText, onToggleOn, onToggleOff)
     StatusBar.Position = UDim2.new(0, 0, 0, 0)
     StatusBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- เริ่มต้นเป็นสีแดง (ปิด)
     StatusBar.Parent = ToggleButton
-
-    -- ฟังก์ชันสร้างปุ่ม Toggle (ต่อ)
     local StatusCorner = Instance.new("UICorner")
     StatusCorner.CornerRadius = UDim.new(0, 3)
     StatusCorner.Parent = StatusBar
@@ -204,18 +205,21 @@ local function CreateToggle(optionText, onToggleOn, onToggleOff)
             if onToggleOn then
                 onToggleOn()  -- เรียกฟังก์ชันเมื่อเปิด Toggle
             end
-            -- แสดง InfoFrame และปรับข้อมูล
+            -- อัปเดต InfoFrame
             InfoFrame.Visible = true
-            DescriptionText.Text = optionText .. " is active."
-            -- ปรับปุ่มใน InfoFrame
-            ToggleButtonInInfo.Text = newState and "Toggle OFF" or "Toggle ON"
+            DescriptionText.Text = optionText .. " is ON"
+            ToggleButtonInInfo.Text = "Toggle ON"
+            ToggleButtonInInfo.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
         else
             StatusBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- สีแดงเมื่อปิด
             if onToggleOff then
                 onToggleOff()  -- เรียกฟังก์ชันเมื่อปิด Toggle
             end
-            -- ซ่อน InfoFrame
+            -- อัปเดต InfoFrame
             InfoFrame.Visible = false
+            DescriptionText.Text = optionText .. " is OFF"
+            ToggleButtonInInfo.Text = "Toggle OFF"
+            ToggleButtonInInfo.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
         end
 
         -- อัปเดต InfoText
@@ -241,3 +245,12 @@ CreateToggle("ESP", function()
 end, function()
     print("ESP is OFF")
 end)
+
+-- ฟังก์ชันการทำงานเพื่อป้องกันการรีเซ็ต UI เมื่อตาย
+local function OnCharacterAdded(character)
+    -- ป้องกันการรีเซ็ต UI
+    local uiClone = ScreenGui:Clone()
+    uiClone.Parent = player:WaitForChild("PlayerGui")
+end
+
+player.CharacterAdded:Connect(OnCharacterAdded)
