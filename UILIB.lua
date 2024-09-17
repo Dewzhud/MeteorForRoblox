@@ -61,46 +61,40 @@ MainFrameStroke.Parent = MainFrame
 local mainGradient = CreatePurpleGradient()
 mainGradient.Parent = MainFrame
 
--- สร้างปุ่มปิดที่มี Gradient และมุมโค้ง
-local CloseButton = Instance.new("TextButton")
-CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -40, 0, 10)
-CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseButton.Text = "X"
-CloseButton.Parent = MainFrame
+-- สร้างปุ่มเปิด/ปิดที่มี Gradient และมุมโค้ง
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0, 100, 0, 30)
+ToggleButton.Position = UDim2.new(0.5, -50, 0, 10)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)  -- สีเขียวเมื่อเปิด
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Text = "Open UI"
+ToggleButton.Parent = ScreenGui
 
--- เพิ่ม Gradient สีม่วงให้กับปุ่มปิด
-local closeGradient = CreatePurpleGradient()
-closeGradient.Parent = CloseButton
+-- เพิ่ม Gradient สีม่วงให้กับปุ่ม
+local buttonGradient = CreatePurpleGradient()
+buttonGradient.Parent = ToggleButton
 
--- เพิ่ม UICorner ให้กับ CloseButton
-local CloseButtonCorner = Instance.new("UICorner")
-CloseButtonCorner.CornerRadius = UDim.new(0, 15)  -- ปรับความโค้งมนตามต้องการ
-CloseButtonCorner.Parent = CloseButton
+-- เพิ่ม UICorner ให้กับ ToggleButton
+local ToggleButtonCorner = Instance.new("UICorner")
+ToggleButtonCorner.CornerRadius = UDim.new(0, 15)  -- ปรับความโค้งมนตามต้องการ
+ToggleButtonCorner.Parent = ToggleButton
 
--- ฟังก์ชันเปิด/ปิด UI สำหรับ CloseButton
+-- ฟังก์ชันเปิด/ปิด UI
 local function ToggleMainFrame()
     MainFrame.Visible = not MainFrame.Visible
+    -- เปลี่ยนข้อความและสีของปุ่มตามสถานะ
+    if MainFrame.Visible then
+        ToggleButton.Text = "Close UI"
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- สีแดงเมื่อเปิด
+    else
+        ToggleButton.Text = "Open UI"
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)  -- สีเขียวเมื่อปิด
+    end
 end
 
--- ฟังก์ชันปิดเฟรม
-CloseButton.MouseButton1Click:Connect(function()
+-- ฟังก์ชันเมื่อกดปุ่ม
+ToggleButton.MouseButton1Click:Connect(function()
     ToggleMainFrame()
-end)
-
--- สร้างปุ่มเปิด
-local OpenButton = Instance.new("TextButton")
-OpenButton.Size = UDim2.new(0, 100, 0, 30)
-OpenButton.Position = UDim2.new(0.5, -50, 0, 10)
-OpenButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-OpenButton.Text = "Open UI"
-OpenButton.Parent = ScreenGui
-
--- ฟังก์ชันเปิดเฟรม
-OpenButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = true
 end)
 
 -- สร้าง Scroll Frame
@@ -192,7 +186,7 @@ end
 CreateToggle("Auto Clicker", function()
     print("Auto Clicker is ON")
 end, function()
-    print("Auto Clicker is OFF")
+        print("Auto Clicker is OFF")
 end)
 
 CreateToggle("Kill Aura", function()
