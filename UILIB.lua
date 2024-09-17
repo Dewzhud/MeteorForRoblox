@@ -87,7 +87,7 @@ end)
 
 -- สร้าง Scroll Frame
 local ScrollFrame = Instance.new("ScrollingFrame")
-ScrollFrame.Size = UDim2.new(0.7, -20, 1, -60)
+ScrollFrame.Size = UDim2.new(1, -20, 1, -60)
 ScrollFrame.Position = UDim2.new(0, 10, 0, 50)
 ScrollFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
@@ -107,14 +107,15 @@ UIPadding.PaddingLeft = UDim.new(0, 10)
 UIPadding.PaddingRight = UDim.new(0, 10)
 UIPadding.Parent = ScrollFrame
 
--- สร้าง InfoFrame สำหรับแสดงข้อมูลของ Toggle ที่เลือก
+-- สร้าง InfoFrame
 local InfoFrame = Instance.new("Frame")
-InfoFrame.Size = UDim2.new(0.3, -20, 1, -60)
-InfoFrame.Position = UDim2.new(0.7, 10, 0, 50)
-InfoFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-InfoFrame.Parent = MainFrame
+InfoFrame.Size = UDim2.new(0, 300, 0, 200)
+InfoFrame.Position = UDim2.new(1, -310, 0, 10)
+InfoFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+InfoFrame.Visible = false
+InfoFrame.Parent = ScreenGui
 
--- เพิ่ม Corner และ Stroke ให้กับ InfoFrame
+-- เพิ่ม Corner ให้กับ InfoFrame
 local InfoFrameCorner = Instance.new("UICorner")
 InfoFrameCorner.CornerRadius = UDim.new(0, 10)
 InfoFrameCorner.Parent = InfoFrame
@@ -124,25 +125,30 @@ InfoFrameStroke.Color = Color3.fromRGB(255, 255, 255)
 InfoFrameStroke.Thickness = 2
 InfoFrameStroke.Parent = InfoFrame
 
--- สร้าง TextLabel สำหรับแสดงคำอธิบายของ Toggle
+-- สร้าง Label สำหรับคำอธิบาย
 local DescLabel = Instance.new("TextLabel")
-DescLabel.Size = UDim2.new(1, 0, 0, 50)
-DescLabel.Position = UDim2.new(0, 0, 0, 10)
-DescLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+DescLabel.Size = UDim2.new(1, -20, 0, 50)
+DescLabel.Position = UDim2.new(0, 10, 0, 10)
+DescLabel.BackgroundTransparency = 1
 DescLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 DescLabel.TextScaled = true
-DescLabel.Text = "Description"
 DescLabel.Parent = InfoFrame
 
--- สร้าง Slider ใน InfoFrame
+-- สร้าง Slider
 local Slider = Instance.new("Frame")
-Slider.Size = UDim2.new(1, -20, 0, 20)
+Slider.Size = UDim2.new(1, -20, 0, 30)
 Slider.Position = UDim2.new(0, 10, 0, 70)
-Slider.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+Slider.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- เริ่มต้นเป็นสีแดง
+Slider.Visible = false  -- ซ่อน Slider เริ่มต้น
 Slider.Parent = InfoFrame
 
--- สร้าง Toggle ปุ่มใน ScrollFrame
-local function CreateToggle(optionText, desc, value, toggleFunction)
+-- เพิ่ม Corner ให้กับ Slider
+local SliderCorner = Instance.new("UICorner")
+SliderCorner.CornerRadius = UDim.new(0, 5)
+SliderCorner.Parent = Slider
+
+-- ฟังก์ชันสร้าง Toggle
+local function CreateToggle(optionText, desc, value, addSlider, toggleFunction)
     -- สร้างปุ่ม Toggle
     local ToggleButton = Instance.new("TextButton")
     ToggleButton.Size = UDim2.new(0, 120, 0, 50)
@@ -180,13 +186,9 @@ local function CreateToggle(optionText, desc, value, toggleFunction)
     ButtonPadding.PaddingRight = UDim.new(0, 5)
     ButtonPadding.Parent = ToggleButton
 
-    -- ฟังก์ชันเมื่อกด Toggle
+    -- ฟังก์ชันเมื่อกด Toggle-- ฟังก์ชันเมื่อกด Toggle
     ToggleButton.MouseButton1Click:Connect(function()
-        -- แสดงข้อมูลใน InfoFrame-- แสดงข้อมูลใน InfoFrame
-        DescLabel.Text = desc  -- อัปเดตคำอธิบาย
-        Slider.BackgroundColor3 = value and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)  -- ปรับสีของ Slider ตามค่าเริ่มต้น
-
-        -- ฟังก์ชันการเปิด/ปิด Toggle
+        -- เปลี่ยนสถานะของ Toggle
         local newState = not activeToggles[optionText]
         activeToggles[optionText] = newState
 
@@ -196,11 +198,20 @@ local function CreateToggle(optionText, desc, value, toggleFunction)
             if toggleFunction then
                 toggleFunction(true)  -- เรียกฟังก์ชันเมื่อเปิด Toggle
             end
+            DescLabel.Text = desc
+            InfoFrame.Visible = true
+            -- แสดง Slider หากมี
+            if addSlider then
+                Slider.Visible = true
+            else
+                Slider.Visible = false
+            end
         else
             StatusBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- สีแดงเมื่อปิด
             if toggleFunction then
                 toggleFunction(false)  -- เรียกฟังก์ชันเมื่อปิด Toggle
             end
+            InfoFrame.Visible = false
         end
 
         -- อัปเดต InfoText
@@ -209,7 +220,7 @@ local function CreateToggle(optionText, desc, value, toggleFunction)
 end
 
 -- สร้าง Toggle ที่มีฟังก์ชันเปิด-ปิด
-CreateToggle("Auto Clicker", "Simulate click", false, function(state)
+CreateToggle("Auto Clicker", "Simulate click", false, false, function(state)
     if state then
         print("Auto Clicker On")
     else
@@ -217,7 +228,7 @@ CreateToggle("Auto Clicker", "Simulate click", false, function(state)
     end
 end)
 
-CreateToggle("Kill Aura", "Activate kill aura", false, function(state)
+CreateToggle("Kill Aura", "Enable Kill Aura", false, false, function(state)
     if state then
         print("Kill Aura On")
     else
@@ -225,7 +236,7 @@ CreateToggle("Kill Aura", "Activate kill aura", false, function(state)
     end
 end)
 
-CreateToggle("ESP", "Enable ESP", false, function(state)
+CreateToggle("ESP", "Enable ESP", false, true, function(state)
     if state then
         print("ESP On")
     else
