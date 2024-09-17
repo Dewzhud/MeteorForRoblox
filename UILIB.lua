@@ -61,7 +61,7 @@ MainFrameStroke.Parent = MainFrame
 local mainGradient = CreatePurpleGradient()
 mainGradient.Parent = MainFrame
 
--- สร้างปุ่มปิด
+-- สร้างปุ่มปิดที่มี Gradient และมุมโค้ง
 local CloseButton = Instance.new("TextButton")
 CloseButton.Size = UDim2.new(0, 30, 0, 30)
 CloseButton.Position = UDim2.new(1, -40, 0, 10)
@@ -70,9 +70,23 @@ CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseButton.Text = "X"
 CloseButton.Parent = MainFrame
 
+-- เพิ่ม Gradient สีม่วงให้กับปุ่มปิด
+local closeGradient = CreatePurpleGradient()
+closeGradient.Parent = CloseButton
+
+-- เพิ่ม UICorner ให้กับ CloseButton
+local CloseButtonCorner = Instance.new("UICorner")
+CloseButtonCorner.CornerRadius = UDim.new(0, 15)  -- ปรับความโค้งมนตามต้องการ
+CloseButtonCorner.Parent = CloseButton
+
+-- ฟังก์ชันเปิด/ปิด UI สำหรับ CloseButton
+local function ToggleMainFrame()
+    MainFrame.Visible = not MainFrame.Visible
+end
+
 -- ฟังก์ชันปิดเฟรม
 CloseButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = false
+    ToggleMainFrame()
 end)
 
 -- สร้างปุ่มเปิด
@@ -174,31 +188,21 @@ local function CreateToggle(optionText, onToggleOn, onToggleOff)
     end)
 end
 
--- ฟังก์ชันตัวอย่างที่เรียกเมื่อ Toggle ถูกเปิด
-local function ToggleOnAutoClicker()
+-- สร้าง Toggle ที่มีฟังก์ชันเปิด-ปิด
+CreateToggle("Auto Clicker", function()
     print("Auto Clicker is ON")
-    -- ใส่โค้ดที่ต้องการเมื่อ Toggle Auto Clicker เปิดที่นี่
-end
-
--- ฟังก์ชันตัวอย่างที่เรียกเมื่อ Toggle ถูกปิด
-local function ToggleOffAutoClicker()
+end, function()
     print("Auto Clicker is OFF")
-    -- ใส่โค้ดที่ต้องการเมื่อ Toggle Auto Clicker ปิดที่นี่
-end-- สร้าง Toggle แต่ละตัว โดยส่งฟังก์ชันที่ต่างกัน
-CreateToggle("Auto Clicker", ToggleOnAutoClicker, ToggleOffAutoClicker)
+end)
+
 CreateToggle("Kill Aura", function()
     print("Kill Aura is ON")
-    -- ใส่โค้ดที่ต้องการเมื่อ Toggle Kill Aura เปิดที่นี่
 end, function()
     print("Kill Aura is OFF")
-    -- ใส่โค้ดที่ต้องการเมื่อ Toggle Kill Aura ปิดที่นี่
-end)
-CreateToggle("ESP", function()
-    print("ESP is ON")
-    -- ใส่โค้ดที่ต้องการเมื่อ Toggle ESP เปิดที่นี่
-end, function()
-    print("ESP is OFF")
-    -- ใส่โค้ดที่ต้องการเมื่อ Toggle ESP ปิดที่นี่
 end)
 
--- เพิ่ม Toggle อื่น ๆ ตามต้องการ
+CreateToggle("ESP", function()
+    print("ESP is ON")
+end, function()
+    print("ESP is OFF")
+end)
