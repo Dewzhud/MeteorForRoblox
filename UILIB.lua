@@ -1,115 +1,152 @@
--- โหลด UILib
+-- UILib Core
 local UILib = {}
 
--- ฟังก์ชันสำหรับสร้าง UI Elements
-local function CreateUIElement(type, parent, properties)
-    local element = Instance.new(type)
-    for property, value in pairs(properties) do
-        element[property] = value
-    end
-    element.Parent = parent
-    return element
+-- สร้างหน้าต่างหลักของ UI
+function UILib:CreateWindow(title)
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0.5, 0, 0.6, 0)
+    MainFrame.Position = UDim2.new(0.25, 0, 0.2, 0)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    MainFrame.Parent = ScreenGui
+
+    local MainFrameCorner = Instance.new("UICorner")
+    MainFrameCorner.CornerRadius = UDim.new(0, 10)
+    MainFrameCorner.Parent = MainFrame
+
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, 0, 0, 50)
+    Title.BackgroundTransparency = 1
+    Title.Text = title
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.TextSize = 24
+    Title.Parent = MainFrame
+
+    local ContentFrame = Instance.new("ScrollingFrame")
+    ContentFrame.Size = UDim2.new(1, -10, 1, -60)
+    ContentFrame.Position = UDim2.new(0, 5, 0, 55)
+    ContentFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    ContentFrame.ScrollBarThickness = 8
+    ContentFrame.Parent = MainFrame
+
+    local ContentLayout = Instance.new("UIListLayout")
+    ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ContentLayout.Padding = UDim.new(0, 10)
+    ContentLayout.Parent = ContentFrame
+
+    return {
+        ScreenGui = ScreenGui,
+        MainFrame = MainFrame,
+        ContentFrame = ContentFrame
+    }
 end
 
 -- ฟังก์ชันสำหรับสร้างหมวดหมู่
-function UILib.CreateCategory(name)
-    local CategoryFrame = CreateUIElement("Frame", UILib.MainFrame, {
-        Size = UDim2.new(1, 0, 0, 200),
-        BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-        LayoutOrder = #UILib.Categories + 1
-    })
-    
-    UILib.Categories[name] = CategoryFrame
-
-    CreateUIElement("TextLabel", CategoryFrame, {
-        Size = UDim2.new(1, 0, 0, 50),
-        BackgroundColor3 = Color3.fromRGB(40, 40, 40),
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        Text = name,
-        TextSize = 20,
-        TextStrokeTransparency = 0.5
-    })
+function UILib:CreateCategory(window, categoryName)
+    local Category = Instance.new("TextLabel")
+    Category.Size = UDim2.new(1, -10, 0, 40)
+    Category.BackgroundTransparency = 1
+    Category.Text = categoryName
+    Category.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Category.TextSize = 18
+    Category.Font = Enum.Font.SourceSans
+    Category.Parent = window.ContentFrame
 end
 
 -- ฟังก์ชันสำหรับสร้างปุ่ม
-function UILib.CreateButton(category, text)
-    local CategoryFrame = UILib.Categories[category]
-    if not CategoryFrame then return end
+function UILib:CreateButton(window, category, buttonText, callback)
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.new(1, -10, 0, 40)
+    Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Button.Text = buttonText
+    Button.Font = Enum.Font.SourceSans
+    Button.TextSize = 18
+    Button.Parent = window.ContentFrame
 
-    local Button = CreateUIElement("TextButton", CategoryFrame, {
-        Size = UDim2.new(1, -10, 0, 50),
-        BackgroundColor3 = Color3.fromRGB(50, 50, 50),
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        Text = text,
-    })
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 8)
+    ButtonCorner.Parent = Button
+
+    Button.MouseButton1Click:Connect(function()
+        if callback then callback() end
+    end)
 end
 
 -- ฟังก์ชันสำหรับสร้าง Toggle
-function UILib.CreateToggle(category, text, initialState, callback)
-    local CategoryFrame = UILib.Categories[category]
-    if not CategoryFrame then return end
+function UILib:CreateToggle(window, category, toggleText, initialState, callback)
+    local Toggle = Instance.new("TextButton")
+    Toggle.Size = UDim2.new(1, -10, 0, 40)
+    Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Toggle.Text = toggleText .. " (Off)"
+    Toggle.Font = Enum.Font.SourceSans
+    Toggle.TextSize = 18
+    Toggle.Parent = window.ContentFrame
 
-    local ToggleFrame = CreateUIElement("Frame", CategoryFrame, {
-        Size = UDim2.new(1, -10, 0, 50),
-        BackgroundColor3 = Color3.fromRGB(50, 50, 50),
-    })
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(0, 8)
+    ToggleCorner.Parent = Toggle
 
-    local ToggleState = Instance.new("BoolValue")
-    ToggleState.Value = initialState
+    local state = initialState
 
-    local ToggleText = CreateUIElement("TextButton", ToggleFrame, {
-        Size = UDim2.new(0.8, 0, 1, 0),
-        BackgroundColor3 = Color3.fromRGB(60, 60, 60),
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        Text = text,
-    })
-
-    local StatusBar = CreateUIElement("Frame", ToggleFrame, {
-        Size = UDim2.new(0.2, 0, 1, 0),
-        BackgroundColor3 = initialState and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0),
-        Position = UDim2.new(0.8, 0, 0, 0)
-    })
-
-    ToggleText.MouseButton1Click:Connect(function()
-        ToggleState.Value = not ToggleState.Value
-        if ToggleState.Value then
-            StatusBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-            if callback then callback(true) end
+    Toggle.MouseButton1Click:Connect(function()
+        state = not state
+        if state then
+            Toggle.Text = toggleText .. " (On)"
         else
-            StatusBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-            if callback then callback(false) end
+            Toggle.Text = toggleText .. " (Off)"
+        end
+        if callback then callback(state) end
+    end)
+end
+
+-- ฟังก์ชันสำหรับสร้าง Slider
+function UILib:CreateSlider(window, category, min, max, default, sliderText, callback)
+    local SliderFrame = Instance.new("Frame")
+    SliderFrame.Size = UDim2.new(1, -10, 0, 70)
+    SliderFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    SliderFrame.Parent = window.ContentFrame
+
+    local SliderLabel = Instance.new("TextLabel")
+    SliderLabel.Size = UDim2.new(1, -10, 0, 30)
+    SliderLabel.Position = UDim2.new(0, 5, 0, 5)
+    SliderLabel.BackgroundTransparency = 1
+    SliderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SliderLabel.Text = sliderText .. ": " .. default
+    SliderLabel.Parent = SliderFrame
+
+    local Slider = Instance.new("TextBox")
+    Slider.Size = UDim2.new(1, -10, 0, 25)
+    Slider.Position = UDim2.new(0, 5, 1, -30)
+    Slider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    Slider.Text = tostring(default)
+    Slider.Parent = SliderFrame
+
+    Slider.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            local value = tonumber(Slider.Text)
+            if value then
+                value = math.clamp(value, min, max)
+                SliderLabel.Text = sliderText .. ": " .. tostring(value)
+                if callback then callback(value) end
+            end
         end
     end)
 end
 
--- ฟังก์ชันสำหรับสร้าง UI หลัก
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = player:WaitForChild("PlayerGui")
-
-UILib.MainFrame = CreateUIElement("Frame", ScreenGui, {
-    Size = UDim2.new(0.5, 0, 0.6, 0),
-    Position = UDim2.new(0.25, 0, 0.2, 0),
-    BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-    Visible = false
-})
-
-local ToggleButton = CreateUIElement("TextButton", ScreenGui, {
-    Size = UDim2.new(0.2, 0, 0.05, 0),
-    Position = UDim2.new(0.4, 0, 0.05, 0),
-    BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-    TextColor3 = Color3.fromRGB(255, 255, 255),
-    Text = "Open UI"
-})
-
-ToggleButton.MouseButton1Click:Connect(function()
-    UILib.MainFrame.Visible = not UILib.MainFrame.Visible
-    ToggleButton.Text = UILib.MainFrame.Visible and "Close UI" or "Open UI"
-end)
-
--- เก็บหมวดหมู่
-UILib.Categories = {}
+-- ฟังก์ชันสำหรับสร้าง Label
+function UILib:CreateLabel(window, category, labelText)
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(1, -10, 0, 40)
+    Label.BackgroundTransparency = 1
+    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Label.Text = labelText
+    Label.Font = Enum.Font.SourceSans
+    Label.TextSize = 18
+    Label.Parent = window.ContentFrame
+end
 
 return UILib
