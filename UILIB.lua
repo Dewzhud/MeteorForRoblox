@@ -65,8 +65,8 @@ mainGradient.Parent = MainFrame
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Size = UDim2.new(0, 100, 0, 30)
 ToggleButton.Position = UDim2.new(0.5, -50, 0, 10)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)  -- สีเขียวเมื่อเปิด
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- สีดำ
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- ข้อความสีขาว
 ToggleButton.Text = "Open UI"
 ToggleButton.Parent = ScreenGui
 
@@ -74,7 +74,19 @@ ToggleButton.Parent = ScreenGui
 local buttonGradient = CreatePurpleGradient()
 buttonGradient.Parent = ToggleButton
 
--- เพิ่ม UICorner ให้กับ ToggleButton
+-- เพิ่ม Frame สำหรับมุมโค้งสีม่วง
+local CornerFrame = Instance.new("Frame")
+CornerFrame.Size = UDim2.new(1, 0, 1, 0)
+CornerFrame.BackgroundTransparency = 1
+CornerFrame.BorderSizePixel = 0
+CornerFrame.Parent = ToggleButton
+
+-- เพิ่ม UIStroke สีม่วงให้กับมุมโค้ง
+local CornerStroke = Instance.new("UIStroke")
+CornerStroke.Color = Color3.fromRGB(138, 43, 226)  -- สีม่วง
+CornerStroke.Thickness = 2
+CornerStroke.Parent = CornerFrame
+
 local ToggleButtonCorner = Instance.new("UICorner")
 ToggleButtonCorner.CornerRadius = UDim.new(0, 15)  -- ปรับความโค้งมนตามต้องการ
 ToggleButtonCorner.Parent = ToggleButton
@@ -85,10 +97,8 @@ local function ToggleMainFrame()
     -- เปลี่ยนข้อความและสีของปุ่มตามสถานะ
     if MainFrame.Visible then
         ToggleButton.Text = "Close UI"
-        ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- สีแดงเมื่อเปิด
     else
         ToggleButton.Text = "Open UI"
-        ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)  -- สีเขียวเมื่อปิด
     end
 end
 
@@ -126,7 +136,7 @@ local function CreateToggle(optionText, onToggleOn, onToggleOff)
     ToggleButton.Size = UDim2.new(0, 120, 0, 50)
     ToggleButton.Text = optionText
     ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    ToggleButton.TextColor3 = Color3.fromRGB(0, 0, 0)  -- สีข้อความเป็นสีดำ
+    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- ข้อความสีขาว
     ToggleButton.Parent = ScrollFrame
 
     -- เพิ่ม Corner และ Stroke ให้กับ ToggleButton
@@ -173,7 +183,7 @@ local function CreateToggle(optionText, onToggleOn, onToggleOff)
         else
             StatusBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- สีแดงเมื่อปิด
             if onToggleOff then
-                onToggleOff()  -- เรียกฟังก์ชันเมื่อปิด Toggle
+            onToggleOff()  -- เรียกฟังก์ชันเมื่อปิด Toggle
             end
         end
 
@@ -186,7 +196,7 @@ end
 CreateToggle("Auto Clicker", function()
     print("Auto Clicker is ON")
 end, function()
-        print("Auto Clicker is OFF")
+    print("Auto Clicker is OFF")
 end)
 
 CreateToggle("Kill Aura", function()
