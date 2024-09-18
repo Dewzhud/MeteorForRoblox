@@ -1,9 +1,9 @@
--- UILib Core
 local UILib = {}
 
 -- สร้างหน้าต่างหลักของ UI
 function UILib:CreateWindow(title)
     local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "MainUI"
     ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
     local MainFrame = Instance.new("Frame")
@@ -30,7 +30,7 @@ function UILib:CreateWindow(title)
     ContentFrame.Position = UDim2.new(0, 10, 0, 55)
     ContentFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     ContentFrame.ScrollBarThickness = 8
-    ContentFrame.CanvasSize = UDim2.new(0, 0, 5, 0)  -- ทำให้สามารถเลื่อนดูได้
+    ContentFrame.CanvasSize = UDim2.new(0, 0, 5, 0) -- ทำให้สามารถเลื่อนดูได้
     ContentFrame.Parent = MainFrame
 
     -- เพิ่ม Layout ให้ ScrollFrame
@@ -48,7 +48,7 @@ function UILib:CreateWindow(title)
 end
 
 -- ฟังก์ชันสำหรับสร้างปุ่ม
-function UILib:CreateButton(window, category, text, callback)
+function UILib:CreateButton(window, text, callback)
     local Button = Instance.new("TextButton")
     Button.Size = UDim2.new(1, -10, 0, 50)
     Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -66,7 +66,7 @@ function UILib:CreateButton(window, category, text, callback)
 end
 
 -- ฟังก์ชันสำหรับสร้าง Toggle
-function UILib:CreateToggle(window, category, text, initialState, callback)
+function UILib:CreateToggle(window, text, initialState, callback)
     local Toggle = Instance.new("TextButton")
     Toggle.Size = UDim2.new(1, -10, 0, 50)
     Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -81,7 +81,6 @@ function UILib:CreateToggle(window, category, text, initialState, callback)
     ToggleCorner.CornerRadius = UDim.new(0, 8)
     ToggleCorner.Parent = Toggle
 
-    -- ฟังก์ชันที่เรียกเมื่อ Toggle ถูกกด
     Toggle.MouseButton1Click:Connect(function()
         ToggleState.Value = not ToggleState.Value
         if ToggleState.Value then
@@ -92,50 +91,6 @@ function UILib:CreateToggle(window, category, text, initialState, callback)
             callback(false)
         end
     end)
-end
-
--- ฟังก์ชันสำหรับสร้าง Slider
-function UILib:CreateSlider(window, category, min, max, default, text, callback)
-    local SliderFrame = Instance.new("Frame")
-    SliderFrame.Size = UDim2.new(1, -10, 0, 70)
-    SliderFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    SliderFrame.Parent = window.ContentFrame
-    
-    local SliderText = Instance.new("TextLabel")
-    SliderText.Size = UDim2.new(1, -10, 0, 30)
-    SliderText.Position = UDim2.new(0, 5, 0, 5)
-    SliderText.BackgroundTransparency = 1
-    SliderText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SliderText.Text = text .. ": " .. default
-    SliderText.Parent = SliderFrame
-
-    local Slider = Instance.new("TextBox")
-    Slider.Size = UDim2.new(1, -10, 0, 25)
-    Slider.Position = UDim2.new(0, 5, 1, -30)
-    Slider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    Slider.Text = tostring(default)
-    Slider.Parent = SliderFrame
-
-    Slider.FocusLost:Connect(function(enterPressed)
-        if enterPressed then
-            local value = tonumber(Slider.Text)
-            if value then
-                value = math.clamp(value, min, max)
-                SliderText.Text = text .. ": " .. tostring(value)
-                callback(value)
-            end
-        end
-    end)
-end
-
--- ฟังก์ชันสำหรับสร้าง Label
-function UILib:CreateLabel(window, category, text)
-    local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(1, -10, 0, 40)
-    Label.BackgroundTransparency = 1
-    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Label.Text = text
-    Label.Parent = window.ContentFrame
 end
 
 -- ฟังก์ชันสำหรับสร้างปุ่มปิด/เปิด UI
@@ -152,7 +107,7 @@ function UILib:CreateToggleUIButton()
     ToggleButton.MouseButton1Click:Connect(function()
         toggleState = not toggleState
         for _, gui in pairs(game.Players.LocalPlayer.PlayerGui:GetChildren()) do
-            if gui:IsA("ScreenGui") and gui.Name ~= ToggleButton.Parent.Name then
+            if gui:IsA("ScreenGui") and gui.Name == "MainUI" then
                 gui.Enabled = toggleState
             end
         end
