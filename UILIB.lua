@@ -1,9 +1,9 @@
--- UILib Core
 local UILib = {}
 
 -- สร้างหน้าต่างหลักของ UI
 function UILib:CreateWindow(title)
     local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "MyScreenGui"
     ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
     local MainFrame = Instance.new("Frame")
@@ -39,6 +39,21 @@ function UILib:CreateWindow(title)
     ContentLayout.Padding = UDim.new(0, 10)
     ContentLayout.Parent = ContentFrame
 
+    -- ปุ่มปิด/เปิด UI
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Size = UDim2.new(0, 50, 0, 50)
+    ToggleButton.Position = UDim2.new(1, -60, 0, 10)
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleButton.Text = "X"
+    ToggleButton.Parent = MainFrame
+
+    local isVisible = true
+    ToggleButton.MouseButton1Click:Connect(function()
+        isVisible = not isVisible
+        MainFrame.Visible = isVisible
+    end)
+
     return {
         ScreenGui = ScreenGui,
         MainFrame = MainFrame,
@@ -67,12 +82,17 @@ end
 
 -- ฟังก์ชันสำหรับสร้าง Toggle
 function UILib:CreateToggle(window, category, text, initialState, callback)
+    local ToggleFrame = Instance.new("Frame")
+    ToggleFrame.Size = UDim2.new(1, -10, 0, 50)
+    ToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    ToggleFrame.Parent = window.ContentFrame
+
     local Toggle = Instance.new("TextButton")
-    Toggle.Size = UDim2.new(1, -10, 0, 50)
-    Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Toggle.Size = UDim2.new(1, -50, 1, 0)
+    Toggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Toggle.Text = text
-    Toggle.Parent = window.ContentFrame
+    Toggle.Text = text .. " (Off)"
+    Toggle.Parent = ToggleFrame
 
     local ToggleState = Instance.new("BoolValue")
     ToggleState.Value = initialState
@@ -81,22 +101,22 @@ function UILib:CreateToggle(window, category, text, initialState, callback)
     ToggleCorner.CornerRadius = UDim.new(0, 8)
     ToggleCorner.Parent = Toggle
 
-    -- แทบสีด้านของ Toggle
-    local StatusIndicator = Instance.new("Frame")
-    StatusIndicator.Size = UDim2.new(0, 10, 1, 0)
-    StatusIndicator.Position = UDim2.new(1, -15, 0, 0)
-    StatusIndicator.BackgroundColor3 = ToggleState.Value and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
-    StatusIndicator.Parent = Toggle
+    local StatusBar = Instance.new("Frame")
+    StatusBar.Size = UDim2.new(0, 10, 1, 0)
+    StatusBar.Position = UDim2.new(1, -10, 0, 0)
+    StatusBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- สีเริ่มต้นสำหรับสถานะปิด
+    StatusBar.Parent = ToggleFrame
 
     -- ฟังก์ชันที่เรียกเมื่อ Toggle ถูกกด
     Toggle.MouseButton1Click:Connect(function()
         ToggleState.Value = not ToggleState.Value
-        StatusIndicator.BackgroundColor3 = ToggleState.Value and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
         if ToggleState.Value then
             Toggle.Text = text .. " (On)"
+            StatusBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)  -- สีสำหรับสถานะเปิด
             callback(true)
         else
             Toggle.Text = text .. " (Off)"
+            StatusBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- สีสำหรับสถานะปิด
             callback(false)
         end
     end)
@@ -144,27 +164,6 @@ function UILib:CreateLabel(window, category, text)
     Label.TextColor3 = Color3.fromRGB(255, 255, 255)
     Label.Text = text
     Label.Parent = window.ContentFrame
-end
-
--- ฟังก์ชันสำหรับสร้างปุ่มปิด/เปิด UI
-function UILib:CreateToggleUIButton()
-    local toggleState = true
-    local ToggleButton = Instance.new("TextButton")
-    ToggleButton.Size = UDim2.new(0, 150, 0, 50)
-    ToggleButton.Position = UDim2.new(0, 20, 0, 20)
-    ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ToggleButton.Text = "Toggle UI"
-    ToggleButton.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-
-    ToggleButton.MouseButton1Click:Connect(function()
-        toggleState = not toggleState
-        for _, gui in pairs(game.Players.LocalPlayer.PlayerGui:GetChildren()) do
-            if gui:IsA("ScreenGui") and gui.Name ~= ToggleButton.Parent.Name then
-                gui.Enabled = toggleState
-            end
-        end
-    end)
 end
 
 return UILib
