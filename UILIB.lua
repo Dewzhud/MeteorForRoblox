@@ -1,9 +1,10 @@
+-- UILib Core
 local UILib = {}
 
 -- สร้างหน้าต่างหลักของ UI
 function UILib:CreateWindow(title)
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "MyScreenGui"
+    ScreenGui.Name = "UILibScreenGui"
     ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
     local MainFrame = Instance.new("Frame")
@@ -24,35 +25,18 @@ function UILib:CreateWindow(title)
     Title.TextSize = 24
     Title.Parent = MainFrame
 
-    -- ScrollFrame สำหรับเนื้อหาภายใน
     local ContentFrame = Instance.new("ScrollingFrame")
     ContentFrame.Size = UDim2.new(1, -20, 1, -60)
     ContentFrame.Position = UDim2.new(0, 10, 0, 55)
     ContentFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     ContentFrame.ScrollBarThickness = 8
-    ContentFrame.CanvasSize = UDim2.new(0, 0, 5, 0)  -- ทำให้สามารถเลื่อนดูได้
+    ContentFrame.CanvasSize = UDim2.new(0, 0, 5, 0)
     ContentFrame.Parent = MainFrame
 
-    -- เพิ่ม Layout ให้ ScrollFrame
     local ContentLayout = Instance.new("UIListLayout")
     ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
     ContentLayout.Padding = UDim.new(0, 10)
     ContentLayout.Parent = ContentFrame
-
-    -- ปุ่มปิด/เปิด UI
-    local ToggleButton = Instance.new("TextButton")
-    ToggleButton.Size = UDim2.new(0, 50, 0, 50)
-    ToggleButton.Position = UDim2.new(1, -60, 0, 10)
-    ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ToggleButton.Text = "X"
-    ToggleButton.Parent = MainFrame
-
-    local isVisible = true
-    ToggleButton.MouseButton1Click:Connect(function()
-        isVisible = not isVisible
-        MainFrame.Visible = isVisible
-    end)
 
     return {
         ScreenGui = ScreenGui,
@@ -63,7 +47,7 @@ function UILib:CreateWindow(title)
 end
 
 -- ฟังก์ชันสำหรับสร้างปุ่ม
-function UILib:CreateButton(window, category, text, callback)
+function UILib:CreateButton(window, text, callback)
     local Button = Instance.new("TextButton")
     Button.Size = UDim2.new(1, -10, 0, 50)
     Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -81,49 +65,41 @@ function UILib:CreateButton(window, category, text, callback)
 end
 
 -- ฟังก์ชันสำหรับสร้าง Toggle
-function UILib:CreateToggle(window, category, text, initialState, callback)
-    local ToggleFrame = Instance.new("Frame")
-    ToggleFrame.Size = UDim2.new(1, -10, 0, 50)
-    ToggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    ToggleFrame.Parent = window.ContentFrame
-
+function UILib:CreateToggle(window, text, initialState, callback)
     local Toggle = Instance.new("TextButton")
-    Toggle.Size = UDim2.new(1, -50, 1, 0)
-    Toggle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    Toggle.Size = UDim2.new(1, -10, 0, 50)
+    Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     Toggle.Text = text .. " (Off)"
-    Toggle.Parent = ToggleFrame
+    Toggle.Parent = window.ContentFrame
 
-    local ToggleState = Instance.new("BoolValue")
-    ToggleState.Value = initialState
-    
+    local ToggleState = initialState
+
     local ToggleCorner = Instance.new("UICorner")
     ToggleCorner.CornerRadius = UDim.new(0, 8)
     ToggleCorner.Parent = Toggle
 
     local StatusBar = Instance.new("Frame")
     StatusBar.Size = UDim2.new(0, 10, 1, 0)
-    StatusBar.Position = UDim2.new(1, -10, 0, 0)
-    StatusBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- สีเริ่มต้นสำหรับสถานะปิด
-    StatusBar.Parent = ToggleFrame
+    StatusBar.Position = UDim2.new(1, -20, 0, 0)
+    StatusBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    StatusBar.Parent = Toggle
 
-    -- ฟังก์ชันที่เรียกเมื่อ Toggle ถูกกด
     Toggle.MouseButton1Click:Connect(function()
-        ToggleState.Value = not ToggleState.Value
-        if ToggleState.Value then
+        ToggleState = not ToggleState
+        if ToggleState then
             Toggle.Text = text .. " (On)"
-            StatusBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)  -- สีสำหรับสถานะเปิด
-            callback(true)
+            StatusBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
         else
             Toggle.Text = text .. " (Off)"
-            StatusBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- สีสำหรับสถานะปิด
-            callback(false)
+            StatusBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
         end
+        callback(ToggleState)
     end)
 end
 
 -- ฟังก์ชันสำหรับสร้าง Slider
-function UILib:CreateSlider(window, category, min, max, default, text, callback)
+function UILib:CreateSlider(window, min, max, default, text, callback)
     local SliderFrame = Instance.new("Frame")
     SliderFrame.Size = UDim2.new(1, -10, 0, 70)
     SliderFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -157,13 +133,34 @@ function UILib:CreateSlider(window, category, min, max, default, text, callback)
 end
 
 -- ฟังก์ชันสำหรับสร้าง Label
-function UILib:CreateLabel(window, category, text)
+function UILib:CreateLabel(window, text)
     local Label = Instance.new("TextLabel")
     Label.Size = UDim2.new(1, -10, 0, 40)
     Label.BackgroundTransparency = 1
     Label.TextColor3 = Color3.fromRGB(255, 255, 255)
     Label.Text = text
     Label.Parent = window.ContentFrame
+end
+
+-- ฟังก์ชันสำหรับสร้างปุ่มปิด/เปิด UI
+function UILib:CreateToggleUIButton()
+    local toggleState = true
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Size = UDim2.new(0, 150, 0, 50)
+    ToggleButton.Position = UDim2.new(0, 20, 0, 20)
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleButton.Text = "Toggle UI"
+    ToggleButton.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+    ToggleButton.MouseButton1Click:Connect(function()
+        toggleState = not toggleState
+        for _, gui in pairs(game.Players.LocalPlayer.PlayerGui:GetChildren()) do
+            if gui:IsA("ScreenGui") and gui.Name ~= ToggleButton.Parent.Name then
+                gui.Enabled = toggleState
+            end
+        end
+    end)
 end
 
 return UILib
