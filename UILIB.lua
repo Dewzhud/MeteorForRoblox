@@ -142,25 +142,4 @@ function UILib:CreateLabel(window, text)
     Label.Parent = window.ContentFrame
 end
 
--- ฟังก์ชันสำหรับสร้างปุ่มปิด/เปิด UI
-function UILib:CreateToggleUIButton()
-    local toggleState = true
-    local ToggleButton = Instance.new("TextButton")
-    ToggleButton.Size = UDim2.new(0, 150, 0, 50)
-    ToggleButton.Position = UDim2.new(0, 20, 0, 20)
-    ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ToggleButton.Text = "Toggle UI"
-    ToggleButton.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-
-    ToggleButton.MouseButton1Click:Connect(function()
-        toggleState = not toggleState
-        for _, gui in pairs(game.Players.LocalPlayer.PlayerGui:GetChildren()) do
-            if gui:IsA("ScreenGui") and gui.Name ~= ToggleButton.Parent.Name then
-                gui.Enabled = toggleState
-            end
-        end
-    end)
-end
-
 return UILib
