@@ -39,6 +39,19 @@ function UILib:CreateWindow(title)
     ContentLayout.Padding = UDim.new(0, 10)
     ContentLayout.Parent = ContentFrame
 
+    -- ปุ่มสี่เหลี่ยมเล็ก ๆ สำหรับเปิด/ปิด Frame
+    local ToggleFrameButton = Instance.new("TextButton")
+    ToggleFrameButton.Size = UDim2.new(0, 30, 0, 30)  -- ขนาดเล็ก
+    ToggleFrameButton.Position = UDim2.new(1, -35, 0, 5)  -- มุมขวาบนของ MainFrame
+    ToggleFrameButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)  -- สีแดงเมื่อเปิด
+    ToggleFrameButton.Text = ""
+    ToggleFrameButton.Parent = MainFrame
+
+    -- ฟังก์ชันปิด/เปิด MainFrame
+    ToggleFrameButton.MouseButton1Click:Connect(function()
+        MainFrame.Visible = not MainFrame.Visible
+    end)
+
     return {
         ScreenGui = ScreenGui,
         MainFrame = MainFrame,
@@ -65,13 +78,13 @@ function UILib:CreateButton(window, category, text, callback)
     end)
 end
 
--- ฟังก์ชันสำหรับสร้าง Toggle
+-- ฟังก์ชันสำหรับสร้าง Toggle พร้อมแถบสี
 function UILib:CreateToggle(window, category, text, initialState, callback)
     local Toggle = Instance.new("TextButton")
     Toggle.Size = UDim2.new(1, -10, 0, 50)
     Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Toggle.Text = text
+    Toggle.Text = text .. " (Off)"
     Toggle.Parent = window.ContentFrame
 
     local ToggleState = Instance.new("BoolValue")
@@ -81,14 +94,23 @@ function UILib:CreateToggle(window, category, text, initialState, callback)
     ToggleCorner.CornerRadius = UDim.new(0, 8)
     ToggleCorner.Parent = Toggle
 
+    -- แถบสีด้านข้าง Toggle
+    local StatusBar = Instance.new("Frame")
+    StatusBar.Size = UDim2.new(0, 5, 1, 0)
+    StatusBar.Position = UDim2.new(0, 0, 0, 0)
+    StatusBar.BackgroundColor3 = initialState and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+    StatusBar.Parent = Toggle
+
     -- ฟังก์ชันที่เรียกเมื่อ Toggle ถูกกด
     Toggle.MouseButton1Click:Connect(function()
         ToggleState.Value = not ToggleState.Value
         if ToggleState.Value then
             Toggle.Text = text .. " (On)"
+            StatusBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)  -- เปลี่ยนเป็นสีเขียวเมื่อเปิด
             callback(true)
         else
             Toggle.Text = text .. " (Off)"
+            StatusBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- เปลี่ยนเป็นสีแดงเมื่อปิด
             callback(false)
         end
     end)
