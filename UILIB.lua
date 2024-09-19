@@ -264,54 +264,92 @@ CreateToggle(uiElements.ContentFrame, "Show Overlay", false, function(state)
         RemoveOverlay("Overlay Active")
     end
 end)
--- ค่าความเร็วในการเล็งไปที่เป้าหมาย (ยิ่งค่าน้อย ยิ่ง smooth มาก)
-local aimSpeed = 0.1
+-- Auto Aim Variables
+local player = game.Players.LocalPlayer
+local camera = workspace.CurrentCamera
 local autoAimEnabled = false
+local maxDistance = 100
+local autoAimConnection = nil
 
--- Auto Aim Smooth Function
-local function AutoAim()
-    while autoAimEnabled do
-        local closestTarget = nil
-        local shortestDistance = math.huge
+-- Function to find the closest alive player
+local function getClosestAlivePlayer()
+    local closestPlayer = nil
+    local shortestDistance = maxDistance
 
-        -- ค้นหาเป้าหมายที่ใกล้ที่สุด
-        for _, player in pairs(game.Players:GetPlayers()) do
-            if player ~= game.Players.LocalPlayer then
-                local character = player.Character
-                if character and character:FindFirstChild("Humanoid") and character:FindFirstChild("HumanoidRootPart") then
-                    local distance = (character.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).magnitude
+    for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+        if otherPlayer ~= player then
+            local character = otherPlayer.Character
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                local humanoid = character:FindFirstChild("Humanoid")
+                if humanoid and humanoid.Health > 0 then
+                    local distance = (character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).magnitude
                     if distance < shortestDistance then
-                        closestTarget = character
+                        closestPlayer = otherPlayer
                         shortestDistance = distance
                     end
                 end
             end
         end
+    end
 
-        -- ถ้าเจอเป้าหมายที่ใกล้ที่สุด ให้ทำการเล็งแบบ smooth
-        if closestTarget then
-            local currentCameraCFrame = game.Workspace.CurrentCamera.CFrame
-            local targetPosition = closestTarget.HumanoidRootPart.Position
-            local aimCFrame = CFrame.new(currentCameraCFrame.Position, targetPosition)
+    return closestPlayer
+end
 
-            -- Lerp มุมกล้องไปยังตำแหน่งเป้าหมายแบบนุ่มนวล
-            game.Workspace.CurrentCamera.CFrame = currentCameraCFrame:Lerp(aimCFrame, aimSpeed)
-        end
-        
-        -- รอระยะเวลาการทำงานถัดไป
-        wait(0.03) -- ค่ารอระหว่าง loop
+-- Function for auto aim
+local function autoAimAtTarget(targetPlayer)
+    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        -- Calculate the direction to aim
+        local targetPosition = targetPlayer.Character.HumanoidRootPart.Position
+        local direction = (targetPosition - player.Character.HumanoidRootPart.Position).unit
+
+        -- Aim the camera at the target
+        camera.CFrame = CFrame.new(player.Character.Head.Position, player.Character.Head.Position + direction)
     end
 end
 
--- UI Toggle for Auto Aim
-CreateToggle(uiElements.ContentFrame, "Auto Aim", false, function(state)
+-- CreateToggle Function with Auto Aim Integration
+function CreateToggle(parent, title, initialState, callback)
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Parent = parent
+    toggleButton.Text = title
+    toggleButton.Size = UDim2.new(0, 100, 0, 50)
+    
+    -- Set initial state
+    local isToggled = initialState
+    if isToggled then
+        callback(true)
+    end
+
+    -- Toggle button click event
+    toggleButton.MouseButton1Click:Connect(function()
+        isToggled = not isToggled
+        callback(isToggled)
+    end)
+
+    return toggleButton
+end
+
+-- UI Library Setup (Example)
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/turtle"))()
+local OwO = library:Window("Rawr")
+
+-- Add the Auto Aim Toggle
+CreateToggle(OwO.ContentFrame, "Auto Aim", false, function(state)
     if state then
         autoAimEnabled = true
-        -- เรียกฟังก์ชัน Auto Aim Smooth
-            CreateOverlay("Auto Aim")
-        AutoAim()
+        autoAimConnection = game:GetService("RunService").RenderStepped:Connect(function()
+            local targetPlayer = getClosestAlivePlayer()
+            if autoAimEnabled and targetPlayer then
+                autoAimAtTarget(targetPlayer)
+            end
+        end)
+        CreateOverlay("Auto Aim Enabled")
     else
-            RemoveOverlay("Auto Aim")
         autoAimEnabled = false
+        if autoAimConnection then
+            autoAimConnection:Disconnect()
+            autoAimConnection = nil
+        end
+        RemoveOverlay("Auto Aim Enabled")
     end
 end)
