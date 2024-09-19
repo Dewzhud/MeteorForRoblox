@@ -108,54 +108,13 @@ local function CreateButton(parent, text, callback)
     end)
 end
 
--- ฟังก์ชันสำหรับสร้าง Toggle
-local function CreateToggle(parent, text, initialState, callback)
-    local Toggle = Instance.new("TextButton")
-    Toggle.Size = UDim2.new(1, -10, 0, 50)
-    Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Toggle.Text = text .. (initialState and " (On)" or " (Off)")
-    Toggle.Parent = parent
-
-    local ToggleState = initialState
-
-    local ToggleCorner = Instance.new("UICorner")
-    ToggleCorner.CornerRadius = UDim.new(0, 8)
-    ToggleCorner.Parent = Toggle
-
-    -- เพิ่ม Text Overlay เมื่อ toggle เปิด
-    local overlay = nil
-    if ToggleState then
-        overlay = CreateTextOverlay(text .. " เปิด")
-    end
-
-    -- ฟังก์ชันที่เรียกเมื่อ Toggle ถูกกด
-    Toggle.MouseButton1Click:Connect(function()
-        ToggleState = not ToggleState
-        Toggle.Text = text .. (ToggleState and " (On)" or " (Off)")
-        callback(ToggleState)
-
-        -- จัดการกับ Overlay
-        if ToggleState then
-            -- สร้าง Text Overlay ถ้า toggle เปิด
-            overlay = CreateTextOverlay(text .. " เปิด")
-        else
-            -- ลบ Text Overlay ถ้า toggle ปิด
-            if overlay then
-                RemoveTextOverlay(overlay)
-                overlay = nil
-            end
-        end
-    end)
-end
-
 -- ฟังก์ชันสำหรับสร้าง Slider
 local function CreateSlider(parent, min, max, default, text, callback)
     local SliderFrame = Instance.new("Frame")
     SliderFrame.Size = UDim2.new(1, -10, 0, 70)
     SliderFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     SliderFrame.Parent = parent
-
+    
     local SliderText = Instance.new("TextLabel")
     SliderText.Size = UDim2.new(1, -10, 0, 30)
     SliderText.Position = UDim2.new(0, 5, 0, 5)
@@ -193,81 +152,109 @@ local function CreateLabel(parent, text)
     Label.Parent = parent
 end
 
+-- รายการของ Text Overlays
+local overlayList = {}
+
 -- ฟังก์ชันสำหรับสร้าง Text Overlay
 local function CreateTextOverlay(text)
-    local Overlay = Instance.new("TextLabel")
-    Overlay.Size = UDim2.new(0, 200, 0, 50)
-    Overlay.Position = UDim2.new(1, -210, 0, #overlayList * 60 + 10)
-    Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    Overlay.BackgroundTransparency = 0.5
-    Overlay.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Overlay.Text = text
-    Overlay.TextSize = 16
-    Overlay.Parent = uiElements.ScreenGui
-    table.insert(overlayList, Overlay)
+    local TextOverlay = Instance.new("TextLabel")
+    TextOverlay.Size = UDim2.new(0, 200, 0, 50) -- ขนาดที่ต้องการ
+    TextOverlay.Position = UDim2.new(1, -210, 0, 10) -- ตำแหน่งที่มุมขวาบน
+    TextOverlay.BackgroundTransparency = 1
+    TextOverlay.TextColor3 = Color3.fromRGB(255, 0, 0) -- สีของข้อความ
+    TextOverlay.Text = text
+    TextOverlay.TextSize = 18
+    TextOverlay.Parent = game.Players.LocalPlayer.PlayerGui
+
+    -- เพิ่มไปยังรายการ overlayList
+    table.insert(overlayList, TextOverlay)
     UpdateOverlaysPosition()
-    return Overlay
 end
 
 -- ฟังก์ชันสำหรับอัปเดตตำแหน่งของ Text Overlays
 local function UpdateOverlaysPosition()
-    for i, overlay in ipairs(overlayList) do
-        overlay.Position = UDim2.new(1, -210, 0, i * 60 + 10)
+    local yOffset = 10
+    for _, overlay in ipairs(overlayList) do
+        overlay.Position = UDim2.new(1, -210, 0, yOffset)
+        yOffset = yOffset + 60 -- เว้นที่ให้กับ overlay ถัดไป
     end
 end
 
 -- ฟังก์ชันสำหรับลบ Text Overlay
 local function RemoveTextOverlay(overlay)
+    overlay:Destroy()
     for i, o in ipairs(overlayList) do
         if o == overlay then
-            o:Destroy()
             table.remove(overlayList, i)
             break
         end
     end
-    -- อัปเดตตำแหน่งของ overlays
     UpdateOverlaysPosition()
 end
 
--- รายการเก็บ Text Overlays
-local overlayList = {}
+-- ฟังก์ชันสำหรับสร้าง Toggle
+local function CreateToggle(parent, text, initialState, callback)
+    local Toggle = Instance.new("TextButton")
+    Toggle.Size = UDim2.new(1, -10, 0, 50)
+    Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Toggle.Text = text .. (initialState and " (On)" or " (Off)")
+    Toggle.Parent = parent
+
+    local ToggleState = initialState
+
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(0, 8)
+    ToggleCorner.Parent = Toggle
+
+    -- ฟังก์ชันที่เรียกเมื่อ Toggle ถูกกด
+    Toggle.MouseButton1Click:Connect(function()
+        ToggleState = not ToggleState
+        Toggle.Text = text .. (ToggleState and " (On)" or " (Off)")
+        callback(ToggleState)
+        
+        if ToggleState then
+            CreateTextOverlay(text .. " is ON")
+        else
+            -- ลบ overlay เมื่อ Toggle ปิด
+            for _, overlay in ipairs(overlayList) do
+                if overlay.Text == text .. " is ON" then
+                    RemoveTextOverlay(overlay)
+                    break
+                end
+            end
+        end
+    end)
+end
 
 -- สร้าง UI
-local uiElements = CreateUI()
+local ui = CreateUI()
 
--- การสร้าง UI ตัวอย่าง
-CreateButton(uiElements.ContentFrame, "Sample Button", function()
+-- ตัวอย่างการสร้าง Toggle
+CreateToggle(ui.ContentFrame, "Feature 1", false, function(state)
+    print("Feature 1 is now", state and "On" or "Off")
+end)
+
+CreateToggle(ui.ContentFrame, "Feature 2", false, function(state)
+    print("Feature 2 is now", state and "On" or "Off")
+end)
+
+CreateToggle(ui.ContentFrame, "Feature 3", false, function(state)
+    print("Feature 3 is now", state and "On" or "Off")
+end)
+
+-- ตัวอย่างการสร้างปุ่ม
+CreateButton(ui.ContentFrame, "Do Something", function()
     print("Button clicked!")
 end)
 
-CreateToggle(uiElements.ContentFrame, "Sample Toggle", false, function(state)
-    print("Toggle state:", state)
-end)
-
-CreateSlider(uiElements.ContentFrame, 0, 100, 50, "Sample Slider", function(value)
+-- ตัวอย่างการสร้าง Slider
+CreateSlider(ui.ContentFrame, 0, 100, 50, "Slider Example", function(value)
     print("Slider value:", value)
 end)
 
-CreateLabel(uiElements.ContentFrame, "Sample Label")
+-- ตัวอย่างการสร้าง Label
+CreateLabel(ui.ContentFrame, "This is a label")
 
--- ปุ่มปิด/เปิด MainFrame ลอยบนหน้าจอ
-local ToggleUIBtn = Instance.new("TextButton")
-ToggleUIBtn.Size = UDim2.new(0, 150, 0, 50)
-ToggleUIBtn.Position = UDim2.new(0, 10, 0, 10)  -- ตำแหน่งลอยบนจอ
-ToggleUIBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-ToggleUIBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleUIBtn.Text = "Meteor🌠"
-ToggleUIBtn.Parent = uiElements.ScreenGui
-
-local BtnCorner = Instance.new("UICorner")
-BtnCorner.CornerRadius = UDim.new(0, 8)
-BtnCorner.Parent = ToggleUIBtn
-
-local toggleState = true
-ToggleUIBtn.MouseButton1Click:Connect(function()
-    toggleState = not toggleState
-    uiElements.MainFrame.Visible = toggleState
-end)
-
--- ทำให้ปุ่มลากได้
-MakeDraggable(ToggleUIBtn)
+-- ทำให้ MainFrame สามารถลากได้
+MakeDraggable(ui.MainFrame)
