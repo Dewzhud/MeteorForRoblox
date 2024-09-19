@@ -264,18 +264,21 @@ CreateToggle(uiElements.ContentFrame, "Show Overlay", false, function(state)
         RemoveOverlay("Overlay Active")
     end
 end)
--- Auto Aim Function
+-- ค่าความเร็วในการเล็งไปที่เป้าหมาย (ยิ่งค่าน้อย ยิ่ง smooth มาก)
+local aimSpeed = 0.1
+local autoAimEnabled = false
+
+-- Auto Aim Smooth Function
 local function AutoAim()
     while autoAimEnabled do
-        -- ค้นหาเป้าหมายที่ใกล้ที่สุด
         local closestTarget = nil
         local shortestDistance = math.huge
-        
+
+        -- ค้นหาเป้าหมายที่ใกล้ที่สุด
         for _, player in pairs(game.Players:GetPlayers()) do
             if player ~= game.Players.LocalPlayer then
                 local character = player.Character
                 if character and character:FindFirstChild("Humanoid") and character:FindFirstChild("HumanoidRootPart") then
-                    -- คำนวณระยะทางระหว่างผู้เล่นและเป้าหมาย
                     local distance = (character.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).magnitude
                     if distance < shortestDistance then
                         closestTarget = character
@@ -284,27 +287,31 @@ local function AutoAim()
                 end
             end
         end
-        
-        -- ถ้าพบเป้าหมายที่ใกล้ที่สุด ให้เล็งไปที่เป้าหมาย
+
+        -- ถ้าเจอเป้าหมายที่ใกล้ที่สุด ให้ทำการเล็งแบบ smooth
         if closestTarget then
-            local aimAt = closestTarget.HumanoidRootPart.Position
-            game.Workspace.CurrentCamera.CFrame = CFrame.new(game.Workspace.CurrentCamera.CFrame.Position, aimAt)
+            local currentCameraCFrame = game.Workspace.CurrentCamera.CFrame
+            local targetPosition = closestTarget.HumanoidRootPart.Position
+            local aimCFrame = CFrame.new(currentCameraCFrame.Position, targetPosition)
+
+            -- Lerp มุมกล้องไปยังตำแหน่งเป้าหมายแบบนุ่มนวล
+            game.Workspace.CurrentCamera.CFrame = currentCameraCFrame:Lerp(aimCFrame, aimSpeed)
         end
         
-        -- รอให้การทำงานซ้ำถัดไป
-        wait(0.1)
+        -- รอระยะเวลาการทำงานถัดไป
+        wait(0.03) -- ค่ารอระหว่าง loop
     end
 end
 
 -- UI Toggle for Auto Aim
 CreateToggle(uiElements.ContentFrame, "Auto Aim", false, function(state)
     if state then
-            CreateOverlay("Auto Aim")
         autoAimEnabled = true
-        -- เรียกฟังก์ชัน Auto Aim เมื่อเปิด Toggle
+        -- เรียกฟังก์ชัน Auto Aim Smooth
+            CreateOverlay("Auto Aim")
         AutoAim()
     else
-        autoAimEnabled = false
             RemoveOverlay("Auto Aim")
+        autoAimEnabled = false
     end
 end)
