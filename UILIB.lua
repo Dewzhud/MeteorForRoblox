@@ -219,6 +219,7 @@ MakeDraggable(ToggleUIBtn)
 -- ตารางเก็บ overlay
 local overlays = {}
 
+-- ฟังก์ชันสำหรับอัพเดตตำแหน่ง
 -- ฟังก์ชันสำหรับอัพเดตตำแหน่งของ overlay
 local function UpdateOverlayPositions()
     local overlayHeight = 30 -- ความสูงของ overlay แต่ละอัน
@@ -264,6 +265,7 @@ CreateToggle(uiElements.ContentFrame, "Show Overlay", false, function(state)
         RemoveOverlay("Overlay Active")
     end
 end)
+
 -- Auto Aim Variables
 local player = game.Players.LocalPlayer
 local camera = workspace.CurrentCamera
@@ -308,9 +310,9 @@ local function autoAimAtTarget(targetPlayer)
 end
 
 -- CreateToggle Function with Auto Aim Integration
-CreateToggle(uiElements.ContentFrame, "Show Overlay", false, function(state)
+CreateToggle(uiElements.ContentFrame, "Auto Aim", false, function(state)
     if state then
-        CreateOverlay("Overlay Active")
+        CreateOverlay("Auto Aim Active")
 
         -- Auto Aim Code
         autoAimEnabled = true
@@ -323,7 +325,7 @@ CreateToggle(uiElements.ContentFrame, "Show Overlay", false, function(state)
             end
         end)
     else
-        RemoveOverlay("Overlay Active")
+        RemoveOverlay("Auto Aim Active")
 
         -- Disable Auto Aim
         autoAimEnabled = false
