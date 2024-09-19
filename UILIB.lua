@@ -308,48 +308,28 @@ local function autoAimAtTarget(targetPlayer)
 end
 
 -- CreateToggle Function with Auto Aim Integration
-function CreateToggle(parent, title, initialState, callback)
-    local toggleButton = Instance.new("TextButton")
-    toggleButton.Parent = parent
-    toggleButton.Text = title
-    toggleButton.Size = UDim2.new(0, 100, 0, 50)
-    
-    -- Set initial state
-    local isToggled = initialState
-    if isToggled then
-        callback(true)
-    end
-
-    -- Toggle button click event
-    toggleButton.MouseButton1Click:Connect(function()
-        isToggled = not isToggled
-        callback(isToggled)
-    end)
-
-    return toggleButton
-end
-
--- UI Library Setup (Example)
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/turtle"))()
-local OwO = library:Window("Rawr")
-
--- Add the Auto Aim Toggle
-CreateToggle(OwO.ContentFrame, "Auto Aim", false, function(state)
+CreateToggle(uiElements.ContentFrame, "Show Overlay", false, function(state)
     if state then
+        CreateOverlay("Overlay Active")
+
+        -- Auto Aim Code
         autoAimEnabled = true
         autoAimConnection = game:GetService("RunService").RenderStepped:Connect(function()
-            local targetPlayer = getClosestAlivePlayer()
-            if autoAimEnabled and targetPlayer then
-                autoAimAtTarget(targetPlayer)
+            if autoAimEnabled then
+                local targetPlayer = getClosestAlivePlayer()
+                if targetPlayer then
+                    autoAimAtTarget(targetPlayer)
+                end
             end
         end)
-        CreateOverlay("Auto Aim Enabled")
     else
+        RemoveOverlay("Overlay Active")
+
+        -- Disable Auto Aim
         autoAimEnabled = false
         if autoAimConnection then
             autoAimConnection:Disconnect()
             autoAimConnection = nil
         end
-        RemoveOverlay("Auto Aim Enabled")
     end
 end)
