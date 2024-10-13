@@ -8,6 +8,8 @@ local Camera = game.Workspace.CurrentCamera
 
 local aimbotEnabled = false
 local aimSensitivity = 0.5  -- Adjust this value as necessary
+local aimRange = 100  -- Default aiming range
+local cameraType = "First Person"  -- Default camera type
 
 -- Function to create the Aimbot UI
 local function CreateAimbotUI()
@@ -126,6 +128,61 @@ local function CreateSlider(parent, min, max, default, text, callback)
     end)
 end
 
+-- Function to create a dropdown menu
+local function CreateDropdown(parent, labelText, options, initialOption, callback)
+    local DropdownFrame = Instance.new("Frame")
+    DropdownFrame.Size = UDim2.new(1, -10, 0, 50)
+    DropdownFrame.BackgroundTransparency = 1
+    DropdownFrame.Parent = parent
+
+    local DropdownLabel = Instance.new("TextLabel")
+    DropdownLabel.Size = UDim2.new(0.5, -10, 1, 0)
+    DropdownLabel.Position = UDim2.new(0, 0, 0, 0)
+    DropdownLabel.BackgroundTransparency = 1
+    DropdownLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    DropdownLabel.Text = labelText
+    DropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
+    DropdownLabel.Parent = DropdownFrame
+
+    local DropdownButton = Instance.new("TextButton")
+    DropdownButton.Size = UDim2.new(0.5, -10, 1, 0)
+    DropdownButton.Position = UDim2.new(0.5, 10, 0, 0)
+    DropdownButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    DropdownButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    DropdownButton.Text = initialOption
+    DropdownButton.Parent = DropdownFrame
+
+    local DropdownList = Instance.new("Frame")
+    DropdownList.Size = UDim2.new(1, 0, 0, 0)
+    DropdownList.Position = UDim2.new(0, 0, 1, 0)
+    DropdownList.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    DropdownList.Visible = false
+    DropdownList.Parent = DropdownFrame
+
+    local function PopulateDropdown()
+        for _, option in ipairs(options) do
+            local OptionButton = Instance.new("TextButton")
+            OptionButton.Size = UDim2.new(1, 0, 0, 30)
+            OptionButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+            OptionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            OptionButton.Text = option
+            OptionButton.Parent = DropdownList
+
+            OptionButton.MouseButton1Click:Connect(function()
+                DropdownButton.Text = option
+                DropdownList.Visible = false
+                callback(option)  -- Call the callback with the selected option
+            end)
+        end
+    end
+
+    DropdownButton.MouseButton1Click:Connect(function()
+        DropdownList.Visible = not DropdownList.Visible
+    end)
+
+    PopulateDropdown()
+end
+
 -- Function to create a button to toggle the UI visibility
 local function CreateToggleButton(ui)
     local ToggleUIButton = Instance.new("TextButton")
@@ -158,7 +215,7 @@ local function InitializeAimbotUI()
                     for _, player in pairs(Players:GetPlayers()) do
                         if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
                             local distance = (player.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).magnitude
-                            if distance < closestDistance then
+                            if distance < closestDistance and distance <= aimRange then
                                 closestDistance = distance
                                 target = player
                             end
@@ -186,6 +243,16 @@ local function InitializeAimbotUI()
     CreateSlider(ui.ContentFrame, 1, 100, 50, "Aim Sensitivity", function(value)
         aimSensitivity = value / 100 -- Convert to a range suitable for aiming adjustments
         print("Aiming sensitivity set to:", aimSensitivity)
+    end)
+
+    CreateSlider(ui.ContentFrame, 1, 500, aimRange, "Aim Range", function(value)
+        aimRange = value
+        print("Aiming range set to:", aimRange)
+    end)
+
+    CreateDropdown(ui.ContentFrame, "Camera Type", {"First Person", "Third Person"}, cameraType, function(option)
+        cameraType = option
+        print("Camera type set to:", cameraType)
     end)
 
     -- Create the toggle button for the UI
