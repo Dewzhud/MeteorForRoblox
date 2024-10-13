@@ -1,0 +1,262 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting") -- Get the Lighting service
+local PhoenixShop = workspace:WaitForChild("PhoenixShop") -- Adjust if your shop is named differently
+
+-- Load the Turtle Library
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/turtle"))()
+
+local proximityHighlightEnabled = false -- Toggle for Proximity Highlight
+local humanoidHighlightEnabled = false -- Toggle for Humanoid Highlight
+local proximityInteractionEnabled = false -- Toggle for proximity interaction
+local interactionLoopConnection -- Store the connection for the loop
+
+-- Fullbright and No Fog toggles
+local fullbrightEnabled = false
+local nofogEnabled = false
+
+-- Function to create the Highlight for proximity prompts
+local function CreateProximityHighlight(prompt)
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ProximityHighlight"
+    highlight.FillColor = Color3.new(0, 1, 0) -- Green color for highlight
+    highlight.FillTransparency = 0.5 -- Slightly transparent
+    highlight.OutlineColor = Color3.new(1, 1, 1) -- White outline
+    highlight.Parent = prompt.Parent
+end
+
+-- Function to enable Proximity Highlight, excluding living entities (Players) and Phoenix Shop
+local function EnableProximityHighlight()
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") 
+            and not obj.Parent:FindFirstChild("Humanoid") 
+            and not obj:IsDescendantOf(PhoenixShop) then -- Exclude Phoenix Shop items
+            if not obj.Parent:FindFirstChild("ProximityHighlight") then
+                -- Create Highlight if not already created
+                CreateProximityHighlight(obj)
+
+                -- Setup connections for removing Highlight when necessary
+                obj.Changed:Connect(function(property)
+                    if property == "Enabled" and not obj.Enabled then
+                        if obj.Parent:FindFirstChild("ProximityHighlight") then
+                            obj.Parent.ProximityHighlight:Destroy()
+                        end
+                    end
+                end)
+
+                obj.AncestryChanged:Connect(function(_, parent)
+                    if not parent then
+                        if obj.Parent:FindFirstChild("ProximityHighlight") then
+                            obj.Parent.ProximityHighlight:Destroy()
+                        end
+                    end
+                end)
+            end
+        end
+    end
+end
+
+-- Function to disable all Proximity Highlight
+local function DisableProximityHighlight()
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") and obj.Parent:FindFirstChild("ProximityHighlight") then
+            obj.Parent.ProximityHighlight:Destroy()
+        end
+    end
+end
+
+-- Function to maintain and update Highlight for proximity prompts
+local function MaintainProximityHighlight()
+    RunService.RenderStepped:Connect(function()
+        if proximityHighlightEnabled then
+            EnableProximityHighlight() -- Continuously check for proximity prompts
+        else
+            DisableProximityHighlight() -- Disable Highlight if not enabled
+        end
+    end)
+end
+
+-- Function to create the Highlight for humanoids
+local function CreateHumanoidHighlight(humanoid)
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "HumanoidHighlight"
+    highlight.FillColor = Color3.new(1, 0, 0) -- Red color for highlight
+    highlight.FillTransparency = 0.5 -- Slightly transparent
+    highlight.OutlineColor = Color3.new(1, 1, 1) -- White outline
+    highlight.Parent = humanoid.Parent
+end
+
+-- Function to enable Humanoid Highlight
+local function EnableHumanoidHighlight()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid and not humanoid.Parent:FindFirstChild("HumanoidHighlight") then
+                CreateHumanoidHighlight(humanoid)
+
+                -- Remove highlight if the humanoid is destroyed
+                humanoid.AncestryChanged:Connect(function(_, parent)
+                    if not parent then
+                        if humanoid.Parent:FindFirstChild("HumanoidHighlight") then
+                            humanoid.Parent.HumanoidHighlight:Destroy()
+                        end
+                    end
+                end)
+            end
+        end
+    end
+end
+
+-- Function to disable all Humanoid Highlight
+local function DisableHumanoidHighlight()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Character then
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid and humanoid.Parent:FindFirstChild("HumanoidHighlight") then
+                humanoid.Parent.HumanoidHighlight:Destroy()
+            end
+        end
+    end
+end
+
+-- Function to maintain and update Highlight for humanoids
+local function MaintainHumanoidHighlight()
+    RunService.RenderStepped:Connect(function()
+        if humanoidHighlightEnabled then
+            EnableHumanoidHighlight() -- Continuously check for humanoids
+        else
+            DisableHumanoidHighlight() -- Disable Highlight if not enabled
+        end
+    end)
+end
+
+-- Function to interact with proximity prompts
+local function InteractWithProximityPrompts()
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("ProximityPrompt") 
+            and not v:IsDescendantOf(PhoenixShop) 
+            and not v.Parent:FindFirstChild("Humanoid") then -- Exclude players
+            fireproximityprompt(v)  -- Trigger the proximity prompt
+        end
+    end
+end
+
+-- Function to start the interaction loop
+local function StartInteractionLoop()
+    interactionLoopConnection = RunService.RenderStepped:Connect(function()
+        if proximityInteractionEnabled then
+            InteractWithProximityPrompts() -- Continuously interact with all valid proximity prompts
+        end
+    end)
+end
+
+-- Function to stop the interaction loop
+local function StopInteractionLoop()
+    if interactionLoopConnection then
+        interactionLoopConnection:Disconnect()
+        interactionLoopConnection = nil
+    end
+end
+
+-- Function to enable Fullbright
+local function EnableFullbright()
+    Lighting.Brightness = 2 -- Increase brightness
+    Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255) -- Set outdoor ambient to white
+end
+
+-- Function to disable Fullbright
+local function DisableFullbright()
+    Lighting.Brightness = 1 -- Reset brightness to normal
+    Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128) -- Reset outdoor ambient to a default value
+end
+
+-- Function to enable No Fog
+local function EnableNoFog()
+    Lighting.FogEnd = 10000 -- Set the fog end distance to a large value
+end
+
+-- Function to disable No Fog
+local function DisableNoFog()
+    Lighting.FogEnd = 200 -- Reset the fog end distance to default
+end
+
+-- Mobile button for toggling Highlight and interaction
+local OwO = library:Window("Proximity Prompt Script")
+
+-- Create a toggle for Proximity Highlight
+OwO:Toggle("Enable Proximity Highlight", false, function(bool)
+    proximityHighlightEnabled = bool
+    if bool then
+        EnableProximityHighlight() -- Enable Highlight immediately
+    else
+        DisableProximityHighlight() -- Disable Highlight immediately
+    end
+end)
+
+-- Create a toggle for Humanoid Highlight
+OwO:Toggle("Enable Humanoid Highlight", false, function(bool)
+    humanoidHighlightEnabled = bool
+    if bool then
+        EnableHumanoidHighlight() -- Enable Highlight immediately
+    else
+        DisableHumanoidHighlight() -- Disable Highlight immediately
+    end
+end)
+
+-- Create a toggle for Proximity Interaction
+OwO:Toggle("Enable Proximity Interaction", false, function(bool)
+    proximityInteractionEnabled = bool
+    if bool then
+        StartInteractionLoop() -- Start the interaction loop when enabled
+    else
+        StopInteractionLoop() -- Stop the interaction loop when disabled
+    end
+end)
+
+-- Create a toggle for Fullbright
+OwO:Toggle("Enable Fullbright", false, function(bool)
+    fullbrightEnabled = bool
+    if bool then
+        EnableFullbright() -- Enable Fullbright immediately
+    else
+        DisableFullbright() -- Disable Fullbright immediately
+    end
+end)
+
+-- Create a toggle for No Fog
+OwO:Toggle("Enable No Fog", false, function(bool)
+    nofogEnabled = bool
+    if bool then
+        EnableNoFog() -- Enable No Fog immediately
+    else
+        DisableNoFog() -- Disable No Fog immediately
+    end
+end)
+
+-- Keybinding for interacting with proximity prompts on PC
+local function SetupKeyBinding()
+    LocalPlayer:GetMouse().KeyDown:Connect(function(key)
+        if key == "e" then
+            InteractWithProximityPrompts() -- Interact with all valid proximity prompts on keypress
+        end
+    end)
+end
+
+-- Initialize the script
+-- Initialize the script
+local function InitializeScript()
+    if UserInputService.TouchEnabled then
+        -- Mobile setup (if needed, but in this version we use the UI)
+    else
+        SetupKeyBinding() -- Setup for PC keybinding
+    end
+
+    MaintainProximityHighlight() -- Start maintaining Highlight for proximity prompts
+    MaintainHumanoidHighlight() -- Start maintaining Highlight for humanoids
+end
+
+-- Start the script
+InitializeScript()
