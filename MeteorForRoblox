@@ -1,98 +1,38 @@
--- UILib with Advanced Configurations
-local UILib = {}
+local UILib = loadstring(game:HttpGet("YOUR_RAW_PASTE_URL_HERE"))()
 
--- Function to create a screen GUI
-function UILib:CreateScreenGUI(name)
-    local screenGUI = Instance.new("ScreenGui")
-    screenGUI.Name = name or "CustomScreenGUI"
-    screenGUI.IgnoreGuiInset = true
-    screenGUI.ResetOnSpawn = false
-    screenGUI.Parent = game:GetService("CoreGui")
-    return screenGUI
-end
+-- Create screen GUI
+local screenGUI = UILib:CreateScreenGUI("AdvancedGUI")
 
--- Function to create a frame with advanced config
-function UILib:CreateFrame(config)
-    local frame = Instance.new("Frame")
-    frame.Position = config.position or UDim2.new(0.5, -100, 0.5, -100)
-    frame.Size = config.size or UDim2.new(0, 200, 0, 200)
-    frame.BackgroundColor3 = config.color or Color3.fromRGB(50, 50, 50)
-    frame.BorderSizePixel = config.borderSize or 0
-    frame.BackgroundTransparency = config.transparency or 0
-    frame.Name = config.name or "CustomFrame"
-    frame.Parent = config.parent or nil
-
-    -- Rounded corners
-    if config.rounded then
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(0, config.roundedRadius or 10)
-        corner.Parent = frame
+-- Create toggle button
+local toggleButton = UILib:CreateButton({
+    parent = screenGUI,
+    position = UDim2.new(0, 10, 0, 10),
+    size = UDim2.new(0, 100, 0, 50),
+    text = "Toggle UI",
+    onClick = function()
+        UILib:ToggleOpenClose(screenGUI)
     end
+})
 
-    -- Drop shadow
-    if config.shadow then
-        local shadow = Instance.new("Frame")
-        shadow.Position = UDim2.new(0, 5, 0, 5)
-        shadow.Size = frame.Size
-        shadow.BackgroundColor3 = Color3.new(0, 0, 0)
-        shadow.BackgroundTransparency = 0.5
-        shadow.ZIndex = frame.ZIndex - 1
-        shadow.Parent = frame
+-- Create a frame with a scrollbar
+local mainFrame = UILib:CreateFrame({
+    parent = screenGUI,
+    position = UDim2.new(0.5, -150, 0.5, -100),
+    size = UDim2.new(0, 300, 0, 200),
+    color = Color3.fromRGB(40, 40, 40),
+    rounded = true
+})
+
+local scrollbar = UILib:CreateScrollbar(mainFrame, UDim2.new(0, 0, 0, 0), UDim2.new(1, 0, 1, 0))
+
+-- Create a slider with a callback
+local slider, knob = UILib:CreateSlider({
+    parent = mainFrame,
+    position = UDim2.new(0.1, 0, 0.9, 0),
+    size = UDim2.new(0.8, 0, 0, 20),
+    min = 0,
+    max = 100,
+    onValueChanged = function(value)
+        print("Slider Value: " .. value)
     end
-
-    return frame
-end
-
--- Function to create a button with advanced config
-function UILib:CreateButton(config)
-    local button = Instance.new("TextButton")
-    button.Position = config.position or UDim2.new(0, 0, 0, 0)
-    button.Size = config.size or UDim2.new(0, 100, 0, 50)
-    button.BackgroundColor3 = config.color or Color3.fromRGB(30, 30, 30)
-    button.Text = config.text or "Button"
-    button.TextColor3 = config.textColor or Color3.fromRGB(255, 255, 255)
-    button.Font = config.font or Enum.Font.SourceSans
-    button.TextSize = config.textSize or 20
-    button.Name = config.name or "CustomButton"
-    button.Parent = config.parent or nil
-
-    -- Rounded corners
-    if config.rounded then
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(0, config.roundedRadius or 10)
-        corner.Parent = button
-    end
-
-    -- Button animations
-    button.MouseEnter:Connect(function()
-        button.BackgroundColor3 = config.hoverColor or Color3.fromRGB(50, 50, 50)
-    end)
-    button.MouseLeave:Connect(function()
-        button.BackgroundColor3 = config.color or Color3.fromRGB(30, 30, 30)
-    end)
-
-    -- Event callback
-    if config.onClick then
-        button.MouseButton1Click:Connect(config.onClick)
-    end
-
-    return button
-end
-
--- Function to create a label with advanced config
-function UILib:CreateLabel(config)
-    local label = Instance.new("TextLabel")
-    label.Position = config.position or UDim2.new(0, 0, 0, 0)
-    label.Size = config.size or UDim2.new(0, 200, 0, 50)
-    label.BackgroundTransparency = config.transparency or 1
-    label.Text = config.text or "Label"
-    label.TextColor3 = config.textColor or Color3.fromRGB(255, 255, 255)
-    label.Font = config.font or Enum.Font.SourceSans
-    label.TextSize = config.textSize or 20
-    label.Name = config.name or "CustomLabel"
-    label.Parent = config.parent or nil
-
-    return label
-end
-
-return UILib
+})
